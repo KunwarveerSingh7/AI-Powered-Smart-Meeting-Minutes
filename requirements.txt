@@ -7,3 +7,6 @@ sqlalchemy
 ollama
 python-dotenv
 email-validator
+
+pypdf
+python-docx

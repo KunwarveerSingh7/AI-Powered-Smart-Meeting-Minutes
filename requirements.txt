@@ -6,3 +6,4 @@ passLib[bcrypt]
 sqlalchemy
 ollama
 python-dotenv
+email-validator

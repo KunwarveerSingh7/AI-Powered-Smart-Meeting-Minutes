@@ -4,7 +4,7 @@ AI-Powered Smart Meeting Minutes and Task Tracker developed using Python, FastAP
 # Team Members
 Kunwarveer Singh Cheema
 Mohammad Rayyan
-Manuel
+Emmanuel
 Obi
 
 # Technologies used

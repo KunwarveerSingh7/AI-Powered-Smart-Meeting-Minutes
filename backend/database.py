@@ -32,11 +32,13 @@ SessionLocal = sessionmaker(
 )
 
 Base = declarative_base()
-
-
+ 
+ 
 def get_db():
+    # Routes use Depends(get_db) to receive a database session.
     db = SessionLocal()
     try:
+        # yield hands the session to the route and pauses here while it runs.
         yield db
     finally:
         db.close()

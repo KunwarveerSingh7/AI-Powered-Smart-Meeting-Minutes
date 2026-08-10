@@ -19,7 +19,12 @@ class User(Base):
 
     # Existing backend authentication fields are preserved.
     id = Column(Integer, primary_key=True, index=True)
+ 
+    # unique=True stops two accounts sharing the same email address.
+    # nullable=False means the column cannot be left empty.
     email = Column(String, unique=True, index=True, nullable=False)
+ 
+    # Only the hashed version of the password is stored, never the real one.
     hashed_password = Column(String, nullable=False)
     role = Column(String, default="employee")  # manager or employee
 

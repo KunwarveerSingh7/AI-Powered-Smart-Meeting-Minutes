@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker, declarative_base
@@ -35,6 +35,7 @@ Base = declarative_base()
 
 
 def get_db():
+    """Provide a database session to FastAPI routes."""
     db = SessionLocal()
     try:
         yield db

@@ -1,4 +1,6 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from database import Base, engine, get_db
 import models
@@ -10,13 +12,31 @@ from typing import List
 Base.metadata.create_all(bind=engine)
  
 app = FastAPI()
- 
- 
+
+app.mount(
+    "/static",
+    StaticFiles(directory="../frontend"),
+    name="static"
+)
+
+templates = Jinja2Templates(
+    directory="../frontend"
+)
+
+
+@app.get("/login-page")
+def login_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="basic.html"
+    )
+
 @app.get("/")
 def read_root():
     # Simple health check so we can confirm the server is running.
     return {"message": "Backend is running"}
- 
+
+
  
 # ---------------------------------------------------------------------------
 # Authentication

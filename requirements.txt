@@ -7,3 +7,4 @@ sqlalchemy
 ollama
 python-dotenv
 email-validator
+jinja2

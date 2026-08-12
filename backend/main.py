@@ -38,13 +38,15 @@ def manager_dashboard(request: Request):
  return templates.TemplateResponse(
   request=request,
   name="manager_dashboard.html"
+ )
 
 # route to employee dashboard
-  @app.get("/employee-dashboard")
+@app.get("/employee-dashboard")
 def employee_dashboard(request: Request):
  return templates.TemplateResponse(
   request=request,
   name="employee_dashboard.html"
+ )
 
 @app.get("/")
 def read_root():

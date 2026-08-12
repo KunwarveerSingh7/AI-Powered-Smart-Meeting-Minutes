@@ -3,7 +3,9 @@ uvicorn[standard]
 python-multipart
 python-jose[cryptography]
 passLib[bcrypt]
+bcrypt==4.3.0
 sqlalchemy
 ollama
 python-dotenv
 email-validator
+jinja2

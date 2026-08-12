@@ -31,6 +31,21 @@ def login_page(request: Request):
         name="basic.html"
     )
 
+# this decides the route for user from login page to the dashboard
+# route to manager dashboard
+@app.get("/manager-dashboard")
+def manager_dashboard(request: Request):
+ return templates.TemplateResponse(
+  request=request,
+  name="manager_dashboard.html"
+
+# route to employee dashboard
+  @app.get("/employee-dashboard")
+def employee_dashboard(request: Request):
+ return templates.TemplateResponse(
+  request=request,
+  name="employee_dashboard.html"
+
 @app.get("/")
 def read_root():
     # Simple health check so we can confirm the server is running.

@@ -1,3 +1,6 @@
+// javaspring.net/blog/can-t-get-response-status-code-with-javascript-fetch/
+// source code for this login form
+
 const loginForm = document.getElementById("loginForm");
 const errorMessage = document.getElementById("errorMessage");
 

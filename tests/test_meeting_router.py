@@ -1,8 +1,10 @@
-﻿from pathlib import Path
+﻿from io import BytesIO
+from pathlib import Path
 import sys
 import tempfile
 import unittest
 
+from docx import Document
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -216,6 +218,156 @@ class MeetingRouterTests(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 422)
+
+
+    @staticmethod
+    def _build_text_pdf() -> bytes:
+        """Create a small machine-readable PDF without extra dependencies."""
+        content = (
+            b"BT\n"
+            b"/F1 12 Tf\n"
+            b"72 720 Td\n"
+            b"(Project PDF Meeting) Tj\n"
+            b"0 -20 Td\n"
+            b"(Decision: Approve PDF upload testing) Tj\n"
+            b"ET\n"
+        )
+
+        objects = [
+            b"<< /Type /Catalog /Pages 2 0 R >>",
+            b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+            (
+                b"<< /Type /Page /Parent 2 0 R "
+                b"/MediaBox [0 0 612 792] "
+                b"/Resources << /Font << /F1 4 0 R >> >> "
+                b"/Contents 5 0 R >>"
+            ),
+            (
+                b"<< /Type /Font /Subtype /Type1 "
+                b"/BaseFont /Helvetica >>"
+            ),
+            (
+                b"<< /Length "
+                + str(len(content)).encode("ascii")
+                + b" >>\nstream\n"
+                + content
+                + b"endstream"
+            ),
+        ]
+
+        pdf = bytearray(b"%PDF-1.4\n")
+        offsets = [0]
+
+        for number, obj in enumerate(objects, start=1):
+            offsets.append(len(pdf))
+            pdf.extend(
+                f"{number} 0 obj\n".encode("ascii")
+            )
+            pdf.extend(obj)
+            pdf.extend(b"\nendobj\n")
+
+        xref_offset = len(pdf)
+
+        pdf.extend(
+            f"xref\n0 {len(objects) + 1}\n".encode("ascii")
+        )
+        pdf.extend(b"0000000000 65535 f \n")
+
+        for offset in offsets[1:]:
+            pdf.extend(
+                f"{offset:010d} 00000 n \n".encode("ascii")
+            )
+
+        pdf.extend(
+            (
+                f"trailer\n"
+                f"<< /Size {len(objects) + 1} /Root 1 0 R >>\n"
+                f"startxref\n{xref_offset}\n"
+                f"%%EOF\n"
+            ).encode("ascii")
+        )
+
+        return bytes(pdf)
+
+    def test_manager_can_upload_pdf_meeting(self):
+        response = self.client.post(
+            "/meetings/upload",
+            data={"title": "PDF Project Meeting"},
+            files={
+                "file": (
+                    "meeting.pdf",
+                    self._build_text_pdf(),
+                    "application/pdf",
+                )
+            },
+        )
+
+        self.assertEqual(response.status_code, 201)
+
+        data = response.json()
+
+        self.assertEqual(data["file_type"], "pdf")
+        self.assertIn(
+            "Project PDF Meeting",
+            data["extracted_text"],
+        )
+        self.assertIn(
+            "Decision: Approve PDF upload testing",
+            data["extracted_text"],
+        )
+
+
+    def test_manager_can_upload_docx_meeting(self):
+        stream = BytesIO()
+        document = Document()
+        document.add_paragraph("Project Planning Meeting")
+        document.add_paragraph("Decision: Complete backend integration")
+        document.save(stream)
+
+        response = self.client.post(
+            "/meetings/upload",
+            data={"title": "Project Planning Meeting"},
+            files={
+                "file": (
+                    "meeting.docx",
+                    stream.getvalue(),
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                )
+            },
+        )
+
+        self.assertEqual(response.status_code, 201)
+
+        data = response.json()
+
+        self.assertEqual(data["file_type"], "docx")
+        self.assertIn(
+            "Decision: Complete backend integration",
+            data["extracted_text"],
+        )
+
+    def test_rejects_file_larger_than_10_mb(self):
+        oversized_content = b"A" * (
+            meeting_router.MAX_UPLOAD_BYTES + 1
+        )
+
+        response = self.client.post(
+            "/meetings/upload",
+            data={"title": "Oversized Meeting"},
+            files={
+                "file": (
+                    "meeting.txt",
+                    oversized_content,
+                    "text/plain",
+                )
+            },
+        )
+
+        self.assertEqual(response.status_code, 413)
+        self.assertEqual(
+            response.json()["detail"],
+            "The uploaded file must not exceed 10 MB.",
+        )
 
 
 if __name__ == "__main__":

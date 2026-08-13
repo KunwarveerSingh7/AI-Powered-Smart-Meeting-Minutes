@@ -221,4 +221,5 @@ __marimo__/
 database/*.db
 database/*.sqlite
 database/*.sqlite3
+*.db
 upload/meetings/

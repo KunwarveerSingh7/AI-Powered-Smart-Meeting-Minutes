@@ -98,47 +98,64 @@ def read_current_user(current_user: dict = Depends(get_current_user)):
     return current_user
 
     # Create Employee
-@app.post("/employee", response_model=schemas.UserOut)
-def create_employee(employee: schemas.employeeCreate,
- db: Session = Depends(get_db), 
- current_user: dict = Depends(get_current_user)):
-
-#as manager can create employee, check if the current user is a manager
+@app.post("/employees", response_model=schemas.UserOut)
+def create_employee(
+    employee: schemas.EmployeeCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    # Only managers are allowed to create employee accounts.
     if current_user["role"] != "manager":
-        raise HTTPException(status_code=403, detail="Only managers can create employee accounts")
+        raise HTTPException(
+            status_code=403,
+            detail="Only managers can create employee accounts"
+        )
 
-        #this would check if the  email is already registered
-existing_user = ( db.query(models.User).filter(models.User.email == employee.email).first() )
-if existing_user:
-    raise HTTPException(status_code=400, detail="Email already registered")
+    # Check if an account with this email already exists.
+    existing_user = (
+        db.query(models.User)
+        .filter(models.User.email == employee.email)
+        .first()
+    )
 
-    # The password is hashed before save. no passwoard to be stored as a plain text
+    if existing_user:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered"
+        )
 
-    #create new employee user and hash their password
+    # Create the employee account.
     new_employee = models.User(
-        email=employee.email,   
+        email=employee.email,
         hashed_password=hash_password(employee.password),
         role="employee"
     )
+
+    # Save the employee to the database.
     db.add(new_employee)
     db.commit()
     db.refresh(new_employee)
 
     return new_employee
 
-    @app.get("/employees", response_model=List[schemas.UserOut])
-    def get_employees(
+@app.get("/employees", response_model=List[schemas.UserOut])
+def get_employees(
     db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user)):
-
-    # Only managers can see the list of employees.
+    current_user: dict = Depends(get_current_user)
+):
     if current_user["role"] != "manager":
         raise HTTPException(
-            status_code=403, 
+            status_code=403,
             detail="Only managers can view employees"
-            )
- 
-    return (db.query(models.User).filter(models.User.role == "employee").all())
+        )
+
+    employees = (
+        db.query(models.User)
+        .filter(models.User.role == "employee")
+        .all()
+    )
+
+    return employees
 
  
 # ---------------------------------------------------------------------------

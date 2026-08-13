@@ -16,10 +16,14 @@ from auth_utils import (
     verify_password,
 )
 
+from meeting_router import router as meeting_router
+
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+app.include_router(meeting_router)
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 

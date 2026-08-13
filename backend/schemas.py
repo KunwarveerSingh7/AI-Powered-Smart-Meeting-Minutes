@@ -18,6 +18,12 @@ class UserCreate(BaseModel):
     # EmailStr rejects anything that is not a valid email address.
     email: EmailStr
     password: str
+
+    class employeeCreate(BaseModel):
+        # What the client must send to /register.
+        # EmailStr rejects anything that is not a valid email address.
+        email: EmailStr
+        password: str
  
  
 class UserOut(BaseModel):

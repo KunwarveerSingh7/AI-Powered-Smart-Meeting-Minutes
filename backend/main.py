@@ -96,7 +96,50 @@ def login(credentials: schemas.LoginRequest, db: Session = Depends(get_db)):
 def read_current_user(current_user: dict = Depends(get_current_user)):
     # Returns the details of whoever is currently logged in.
     return current_user
+
+    # Create Employee
+@app.post("/employee", response_model=schemas.UserOut)
+def create_employee(employee: schemas.employeeCreate,
+ db: Session = Depends(get_db), 
+ current_user: dict = Depends(get_current_user)):
+
+#as manager can create employee, check if the current user is a manager
+    if current_user["role"] != "manager":
+        raise HTTPException(status_code=403, detail="Only managers can create employee accounts")
+
+        #this would check if the  email is already registered
+existing_user = ( db.query(models.User).filter(models.User.email == employee.email).first() )
+if existing_user:
+    raise HTTPException(status_code=400, detail="Email already registered")
+
+    # The password is hashed before save. no passwoard to be stored as a plain text
+
+    #create new employee user and hash their password
+    new_employee = models.User(
+        email=employee.email,   
+        hashed_password=hash_password(employee.password),
+        role="employee"
+    )
+    db.add(new_employee)
+    db.commit()
+    db.refresh(new_employee)
+
+    return new_employee
+
+    @app.get("/employees", response_model=List[schemas.UserOut])
+    def get_employees(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)):
+
+    # Only managers can see the list of employees.
+    if current_user["role"] != "manager":
+        raise HTTPException(
+            status_code=403, 
+            detail="Only managers can view employees"
+            )
  
+    return (db.query(models.User).filter(models.User.role == "employee").all())
+
  
 # ---------------------------------------------------------------------------
 # Tasks

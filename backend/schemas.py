@@ -19,6 +19,11 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
 
+class EmployeeCreate(BaseModel):
+    # What a manager sends when creating an employee account.
+    email: EmailStr
+    password: str
+
 
 class UserOut(BaseModel):
     # What we send back about a user. Notice there is no password field here,

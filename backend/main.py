@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
@@ -138,6 +139,66 @@ def read_current_user(
 ):
     return current_user
 
+# Create Employee
+@app.post("/employees", response_model=schemas.UserOut)
+def create_employee(
+    employee: schemas.EmployeeCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    # Only managers are allowed to create employee accounts.
+    if current_user["role"] != "manager":
+        raise HTTPException(
+            status_code=403,
+            detail="Only managers can create employee accounts"
+        )
+
+    # Check if an account with this email already exists.
+    existing_user = (
+        db.query(models.User)
+        .filter(models.User.email == employee.email)
+        .first()
+    )
+
+    if existing_user:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered"
+        )
+
+    # Create the employee account.
+    new_employee = models.User(
+        email=employee.email,
+        hashed_password=hash_password(employee.password),
+        role="employee"
+    )
+
+    # Save the employee to the database.
+    db.add(new_employee)
+    db.commit()
+    db.refresh(new_employee)
+
+    return new_employee
+
+@app.get("/employees", response_model=List[schemas.UserOut])
+def get_employees(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    if current_user["role"] != "manager":
+        raise HTTPException(
+            status_code=403,
+            detail="Only managers can view employees"
+        )
+
+    employees = (
+        db.query(models.User)
+        .filter(models.User.role == "employee")
+        .all()
+    )
+
+    return employees
+
 
 # ---------------------------------------------------------------------------
 # Task helpers
@@ -235,8 +296,6 @@ def _task_to_response(task: models.Task) -> dict:
             for assignment in task.assignments
         ],
     }
-
-
 # ---------------------------------------------------------------------------
 # Tasks
 # ---------------------------------------------------------------------------

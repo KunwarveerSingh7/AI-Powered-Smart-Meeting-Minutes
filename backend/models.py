@@ -1,4 +1,4 @@
-from sqlalchemy import (
+﻿from sqlalchemy import (
     CheckConstraint,
     Column,
     DateTime,
@@ -17,21 +17,20 @@ from database import Base
 class User(Base):
     __tablename__ = "users"
 
-    # Existing backend authentication fields are preserved.
     id = Column(Integer, primary_key=True, index=True)
- 
-    # unique=True stops two accounts sharing the same email address.
-    # nullable=False means the column cannot be left empty.
     email = Column(String, unique=True, index=True, nullable=False)
- 
-    # Only the hashed version of the password is stored, never the real one.
     hashed_password = Column(String, nullable=False)
     role = Column(String, default="employee")  # manager or employee
 
-    # Database relationships added for meetings and tasks.
     uploaded_meetings = relationship(
         "Meeting",
         back_populates="uploader",
+    )
+
+    created_tasks = relationship(
+        "Task",
+        back_populates="creator",
+        foreign_keys="Task.created_by",
     )
 
     task_assignments = relationship(
@@ -164,6 +163,13 @@ class Task(Base):
         index=True,
     )
 
+    created_by = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=False,
+        index=True,
+    )
+
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     due_date = Column(DateTime, nullable=True, index=True)
@@ -197,6 +203,12 @@ class Task(Base):
     meeting = relationship(
         "Meeting",
         back_populates="tasks",
+    )
+
+    creator = relationship(
+        "User",
+        back_populates="created_tasks",
+        foreign_keys=[created_by],
     )
 
     assignments = relationship(

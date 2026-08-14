@@ -1,12 +1,15 @@
 from pathlib import Path
 from typing import List
 
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, UploadFile, File, Form
+from datetime import datetime
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from file_handler import extract_text
 
 from database import Base, engine, get_db
+import shutil
 import models
 import schemas
 from auth_utils import (
@@ -60,6 +63,15 @@ def employee_dashboard(request: Request):
         name="employee_dashboard.html",
     )
 
+@app.get("/meeting-review/{meeting_id}")
+def meeting_review_page(
+    request: Request,
+    meeting_id: int
+):
+    return templates.TemplateResponse(
+        request=request,
+        name="meeting_review.html"
+    )
 
 @app.get("/")
 def read_root():
@@ -296,6 +308,173 @@ def _task_to_response(task: models.Task) -> dict:
             for assignment in task.assignments
         ],
     }
+
+
+# ---------------------------------------------------------------------------
+# Meeting upload
+# ---------------------------------------------------------------------------
+
+UPLOAD_FOLDER = Path("../upload")
+
+UPLOAD_FOLDER.mkdir(
+    parents=True,
+    exist_ok=True
+)
+
+
+@app.post("/meetings/upload")
+def upload_meeting(
+    title: str = Form(...),
+    meeting_date: str = Form(""),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+
+    # Only managers upload meeting minutes.
+    if current_user["role"] != "manager":
+        raise HTTPException(
+            status_code=403,
+            detail="Only managers can upload meeting minutes"
+        )
+
+    allowed_extensions = {
+        ".pdf",
+        ".docx",
+        ".txt"
+    }
+
+    extension = Path(file.filename).suffix.lower()
+
+    if extension not in allowed_extensions:
+        raise HTTPException(
+            status_code=400,
+            detail="Only PDF, DOCX and TXT files are allowed"
+        )
+
+    manager = (
+        db.query(models.User)
+        .filter(
+            models.User.email == current_user["email"]
+        )
+        .first()
+    )
+
+    if not manager:
+        raise HTTPException(
+            status_code=404,
+            detail="Manager account not found"
+        )
+
+    # Add timestamp so two files with the same name
+    # do not overwrite each other.
+    timestamp = datetime.now().strftime(
+        "%Y%m%d_%H%M%S"
+    )
+
+    safe_filename = (
+        timestamp + "_" + Path(file.filename).name
+    )
+
+    stored_path = (
+        UPLOAD_FOLDER / safe_filename
+    )
+
+    # Save uploaded file.
+    with open(stored_path, "wb") as buffer:
+        shutil.copyfileobj(
+            file.file,
+            buffer
+        )
+
+    # Extract readable text.
+    try:
+        raw_text = extract_text(stored_path)
+
+    except Exception as error:
+
+        if stored_path.exists():
+            stored_path.unlink()
+
+        raise HTTPException(
+            status_code=400,
+            detail="Could not extract text from the uploaded file"
+        ) from error
+
+    parsed_date = None
+
+    if meeting_date:
+        try:
+            parsed_date = datetime.strptime(
+                meeting_date,
+                "%Y-%m-%d"
+            )
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid meeting date"
+            )
+
+    meeting = models.Meeting(
+        title=title,
+        meeting_date=parsed_date,
+        uploaded_by=manager.id,
+        original_filename=file.filename,
+        stored_file_path=str(stored_path),
+        file_type=extension.replace(".", ""),
+        raw_text=raw_text,
+        status="draft"
+    )
+
+    db.add(meeting)
+    db.commit()
+    db.refresh(meeting)
+
+    return {
+        "message": "Meeting uploaded successfully",
+        "meeting_id": meeting.id
+    }
+
+
+@app.get("/meetings/{meeting_id}")
+def get_meeting(
+    meeting_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+
+    if current_user["role"] != "manager":
+        raise HTTPException(
+            status_code=403,
+            detail="Only managers can review meetings"
+        )
+
+    meeting = (
+        db.query(models.Meeting)
+        .filter(
+            models.Meeting.id == meeting_id
+        )
+        .first()
+    )
+
+    if not meeting:
+        raise HTTPException(
+            status_code=404,
+            detail="Meeting not found"
+        )
+
+    return {
+        "id": meeting.id,
+        "title": meeting.title,
+        "meeting_date": meeting.meeting_date,
+        "original_filename":
+            meeting.original_filename,
+        "file_type": meeting.file_type,
+        "raw_text": meeting.raw_text,
+        "status": meeting.status
+    }
+
+
 # ---------------------------------------------------------------------------
 # Tasks
 # ---------------------------------------------------------------------------

@@ -60,51 +60,61 @@
 
          <hr>
          
-         <h2> Meeting Minutes</h2>
+         <h2>Meeting Minutes</h2>
 
-         <button type="button" id="showMeetingForm"> 
-           Upload Meeting Minutes</button>
+<!-- Button used to open the meeting upload form -->
+<button type="button" id="showMeetingForm">
+    Upload Meeting Minutes
+</button>
 
-           <div id="meetingFormContainer" style="display: none;">
-            <h3>Upload Meeting </h3>
+<!-- Hidden until the manager clicks Upload Meeting Minutes -->
+<div id="meetingFormContainer" style="display: none;">
 
+    <h3>Upload Meeting</h3>
 
-           <form id="meetingUploadForm">
+    <form id="meetingUploadForm">
 
-            <div>
-              
-              <label for="meetingFile">Meeting Title</label>
-              <input type="file" id="meetingFile"  required>
-            </div>
-
-            <br>
-
-            <div>
-              <label for="meetingDate">Meeting Date</label>
-              <input type="date" id="meetingDate"  required>
-            </div>
-
-            <div>
-              <label for="meetingTitle">Meeting Title</label>
-              <input type="text" id="meetingTitle" >
-
-            </div>
-
-            <br>
-
-            <div>
-              <label for="meetingFile">Meeting File</label>
-              
-              <input type="file" id="meetingFile" accept=".pdf,.doc,.docx" required>
-            </div>
-
-            <br>
-
-            <button type="submit">Upload Meeting</button>
-          </form>
-
-          <p id="meetingUploadMessage"></p>
+        <!-- Manager enters a name/title for the meeting -->
+        <div>
+            <label for="meetingTitle">Meeting Title</label>
+            <input type="text" id="meetingTitle" required>
         </div>
+
+        <br>
+
+        <!-- Date when the meeting took place -->
+        <div>
+            <label for="meetingDate">Meeting Date</label>
+            <input type="date" id="meetingDate" required>
+        </div>
+
+        <br>
+
+        <!-- Manager selects the actual meeting minutes document -->
+        <div>
+            <label for="meetingFile">Meeting File</label>
+            <input
+                type="file"
+                id="meetingFile"
+                accept=".pdf,.docx,.txt"
+                required
+            >
+        </div>
+
+        <br>
+
+        <button type="submit">
+            Upload Meeting
+        </button>
+
+    </form>
+
+    <!-- Success/error messages from JavaScript appear here -->
+    <p id="meetingUploadMessage"></p>
+
+</div>
+
+
 
       <h2>project</h2>
 

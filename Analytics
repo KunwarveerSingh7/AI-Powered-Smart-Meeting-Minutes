@@ -1,0 +1,202 @@
+"""
+analytics.py
+FastAPI router for the manager analytics dashboard.
+
+All statistics are derived from real database data — nothing is invented.
+Empty database → all counts return 0, completion_rate returns 0.0.
+
+Routes:
+  GET /analytics/summary      Manager dashboard headline statistics
+  GET /analytics/tasks         Task breakdown by status and priority
+  GET /analytics/employees     Per-employee task load and progress
+"""
+
+from datetime import date
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+
+import models
+from auth_utils import get_current_user
+from database import get_db
+
+router = APIRouter(prefix="/analytics", tags=["analytics"])
+
+
+def _require_manager(current_user: dict) -> None:
+    if current_user.get("role") != "manager":
+        raise HTTPException(
+            status_code=403,
+            detail="Only managers can view analytics",
+        )
+
+
+# ---------------------------------------------------------------------------
+# GET /analytics/summary
+# ---------------------------------------------------------------------------
+
+@router.get("/summary")
+def get_summary(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Returns headline statistics for the manager dashboard:
+      - total_meetings, draft_meetings, published_meetings
+      - total_tasks, completed_tasks, pending_tasks, overdue_tasks
+      - completion_rate_pct
+      - tasks_needing_review  (manager_review_required flag not yet on model,
+                               so we count tasks whose description contains the flag text)
+      - recent_meetings (last 5)
+    """
+    _require_manager(current_user)
+
+    today = date.today().isoformat()
+
+    total_meetings    = db.query(func.count(models.Meeting.id)).scalar() or 0
+    draft_meetings    = db.query(func.count(models.Meeting.id)).filter(models.Meeting.status == "draft").scalar() or 0
+    published_meetings = db.query(func.count(models.Meeting.id)).filter(models.Meeting.status == "published").scalar() or 0
+
+    total_tasks     = db.query(func.count(models.Task.id)).scalar() or 0
+    completed_tasks = db.query(func.count(models.Task.id)).filter(models.Task.status == "completed").scalar() or 0
+    pending_tasks   = db.query(func.count(models.Task.id)).filter(models.Task.status == "pending").scalar() or 0
+    in_progress     = db.query(func.count(models.Task.id)).filter(models.Task.status == "in_progress").scalar() or 0
+
+    overdue_tasks = (
+        db.query(func.count(models.Task.id))
+        .filter(
+            models.Task.due_date < today,
+            models.Task.status.notin_(["completed", "cancelled"]),
+        )
+        .scalar() or 0
+    )
+
+    # Tasks flagged for review contain the review warning in their description
+    tasks_needing_review = (
+        db.query(func.count(models.Task.id))
+        .filter(models.Task.description.contains("Manager review required"))
+        .scalar() or 0
+    )
+
+    completion_rate = (
+        round((completed_tasks / total_tasks) * 100, 1)
+        if total_tasks > 0 else 0.0
+    )
+
+    recent_meetings = (
+        db.query(models.Meeting.id, models.Meeting.title, models.Meeting.status, models.Meeting.created_at)
+        .order_by(models.Meeting.created_at.desc())
+        .limit(5)
+        .all()
+    )
+
+    return {
+        "meetings": {
+            "total":     total_meetings,
+            "draft":     draft_meetings,
+            "published": published_meetings,
+        },
+        "tasks": {
+            "total":               total_tasks,
+            "completed":           completed_tasks,
+            "pending":             pending_tasks,
+            "in_progress":         in_progress,
+            "overdue":             overdue_tasks,
+            "needing_review":      tasks_needing_review,
+            "completion_rate_pct": completion_rate,
+        },
+        "recent_meetings": [
+            {
+                "id":         m.id,
+                "title":      m.title,
+                "status":     m.status,
+                "created_at": m.created_at,
+            }
+            for m in recent_meetings
+        ],
+    }
+
+
+# ---------------------------------------------------------------------------
+# GET /analytics/tasks
+# ---------------------------------------------------------------------------
+
+@router.get("/tasks")
+def get_task_breakdown(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Task counts grouped by status and by priority."""
+    _require_manager(current_user)
+
+    by_status = (
+        db.query(models.Task.status, func.count(models.Task.id))
+        .group_by(models.Task.status)
+        .all()
+    )
+
+    by_priority = (
+        db.query(models.Task.priority, func.count(models.Task.id))
+        .group_by(models.Task.priority)
+        .all()
+    )
+
+    return {
+        "by_status":   {row[0]: row[1] for row in by_status},
+        "by_priority": {row[0]: row[1] for row in by_priority},
+    }
+
+
+# ---------------------------------------------------------------------------
+# GET /analytics/employees
+# ---------------------------------------------------------------------------
+
+@router.get("/employees")
+def get_employee_stats(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Per-employee statistics:
+      - how many tasks assigned
+      - how many completed
+      - how many overdue
+    """
+    _require_manager(current_user)
+
+    today = date.today().isoformat()
+
+    employees = (
+        db.query(models.User)
+        .filter(models.User.role == "employee")
+        .all()
+    )
+
+    results = []
+    for emp in employees:
+        assigned = len(emp.task_assignments)
+        completed = sum(
+            1 for ta in emp.task_assignments
+            if ta.task and ta.task.status == "completed"
+        )
+        overdue = sum(
+            1 for ta in emp.task_assignments
+            if ta.task
+            and ta.task.due_date
+            and ta.task.due_date.date().isoformat() < today
+            and ta.task.status not in ("completed", "cancelled")
+        )
+        results.append({
+            "id":           emp.id,
+            "email":        emp.email,
+            "tasks_total":  assigned,
+            "tasks_completed": completed,
+            "tasks_overdue":   overdue,
+            "completion_rate_pct": (
+                round((completed / assigned) * 100, 1)
+                if assigned > 0 else 0.0
+            ),
+        })
+
+    return {"employees": results}

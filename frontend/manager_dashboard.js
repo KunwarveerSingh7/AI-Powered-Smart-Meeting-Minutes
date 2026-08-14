@@ -177,3 +177,115 @@ refreshEmployees.addEventListener("click", function () {
 
 // Load employees automatically when the dashboard opens.
 loadEmployees();
+
+// meeting upload section
+// this section is for the manager to upload meeting minutes
+// the uploaded meeting minutes will be stored in the backend
+// elements taken from manager_dashboard.html to be used in this section
+// check ids match with manager_dashboard.html
+const showMeetingForm = document.getElementById("showMeetingForm");
+const meetingFormContainer = document.getElementById("meetingFormContainer");
+const meetingUploadForm = document.getElementById("meetingUploadForm");
+const meetingUploadMessage = document.getElementById("meetingUploadMessage");
+
+
+// upload form is hidden. only shown on click of upload button.
+// When manager clicks the upload button, the form becomes visible.
+showMeetingForm.addEventListener("click", function () {
+    meetingFormContainer.style.display = "block";
+});
+
+
+// Runs when manager submits the meeting minutes form
+meetingUploadForm.addEventListener("submit", async function (event) {
+
+    // Stops the browser from refreshing the whole page after submitting
+    event.preventDefault();
+
+    // Clear any message from the previous upload attempt
+    meetingUploadMessage.textContent = "";
+
+    // Get meeting information entered by manager
+    const title =
+        document.getElementById("meetingTitle").value;
+
+    const meetingDate =
+        document.getElementById("meetingDate").value;
+
+    // Get the uploaded meeting minutes file
+    const fileInput =
+        document.getElementById("meetingFile");
+
+    const file = fileInput.files[0];
+
+
+    // Do not continue if manager hasn't selected a file
+    if (!file) {
+        meetingUploadMessage.textContent =
+            "Please select a meeting file.";
+        return;
+    }
+
+
+    // FormData is used because we are sending both
+    // normal meeting information and an actual file to the backend
+    const formData = new FormData();
+
+    formData.append("title", title);
+    formData.append("meeting_date", meetingDate);
+    formData.append("file", file);
+
+
+    try {
+
+        // Send the meeting minutes to the backend upload route
+        const response = await fetch("/meetings/upload", {
+            method: "POST",
+
+            headers: {
+                // Manager token is sent so backend can check
+                // that the person uploading is actually a manager
+                "Authorization": "Bearer " + token
+            },
+
+            body: formData
+        });
+
+
+        // Read whatever response comes back from FastAPI
+        const data = await response.json();
+
+
+        // Show backend error if upload was rejected
+        if (!response.ok) {
+            meetingUploadMessage.textContent =
+                data.detail || "Meeting upload failed.";
+            return;
+        }
+
+
+        // Let manager know that upload worked
+        meetingUploadMessage.textContent =
+            "Meeting uploaded successfully.";
+
+        // Clear the form after successful upload
+        meetingUploadForm.reset();
+
+
+        // Backend gives us the ID of the new meeting.
+        // Use it to open the review page for that specific meeting.
+        window.location.href =
+            "/meeting-review/" + data.meeting_id;
+
+
+    } catch (error) {
+
+        // This normally happens if frontend cannot reach the backend
+        // or another unexpected connection problem happens.
+        console.error("Meeting upload error:", error);
+
+        meetingUploadMessage.textContent =
+            "Unable to upload meeting.";
+    }
+
+});

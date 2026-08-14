@@ -1,6 +1,8 @@
 fastapi
 uvicorn[standard]
 python-multipart
+python-docx
+pypdf
 python-jose[cryptography]
 passLib[bcrypt]
 bcrypt==4.3.0

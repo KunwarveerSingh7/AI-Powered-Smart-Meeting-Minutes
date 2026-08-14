@@ -57,6 +57,55 @@
             No employees found.
           </div>
 
+
+         <hr>
+         
+         <h2> Meeting Minutes</h2>
+
+         <button type="button" id="showMeetingForm"> 
+           Upload Meeting Minutes</button>
+
+           <div id="meetingFormContainer" style="display: none;">
+            <h3>Upload Meeting </h3>
+
+
+           <form id="meetingUploadForm">
+
+            <div>
+              
+              <label for="meetingFile">Meeting Title</label>
+              <input type="file" id="meetingFile"  required>
+            </div>
+
+            <br>
+
+            <div>
+              <label for="meetingDate">Meeting Date</label>
+              <input type="date" id="meetingDate"  required>
+            </div>
+
+            <div>
+              <label for="meetingTitle">Meeting Title</label>
+              <input type="text" id="meetingTitle" >
+
+            </div>
+
+            <br>
+
+            <div>
+              <label for="meetingFile">Meeting File</label>
+              
+              <input type="file" id="meetingFile" accept=".pdf,.doc,.docx" required>
+            </div>
+
+            <br>
+
+            <button type="submit">Upload Meeting</button>
+          </form>
+
+          <p id="meetingUploadMessage"></p>
+        </div>
+
       <h2>project</h2>
 
       <button>

@@ -93,7 +93,7 @@ employeeForm.addEventListener("submit", async function (event) {
         const data = await response.json();
 
         // If something went wrong, like an existing email
-        // display the backend error message 
+        // display the backend error message
         if (!response.ok) {
             employeeMessage.textContent =
                 data.detail || "Could not create employee.";

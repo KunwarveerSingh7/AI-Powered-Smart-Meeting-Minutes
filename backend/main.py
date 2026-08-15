@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from file_handler import extract_text
+from ai_service import analyse_meeting, check_ollama_running
 
 from database import Base, engine, get_db
 import shutil
@@ -477,6 +478,63 @@ def get_meeting(
         "raw_text": meeting.raw_text,
         "status": meeting.status
     }
+
+
+# ---------------------------------------------------------------------------
+# Meeting Processing
+# ---------------------------------------------------------------------------
+
+
+@app.post("/meetings/{meeting_id}/analyse")
+def analyse_meeting_route(
+    meeting_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    # Only managers can run AI analysis.
+    if current_user["role"] != "manager":
+        raise HTTPException(
+            status_code=403,
+            detail="Only managers can analyse meetings"
+        )
+
+    # Find the meeting that has already been uploaded.
+    meeting = (
+        db.query(models.Meeting)
+        .filter(models.Meeting.id == meeting_id)
+        .first()
+    )
+
+    if meeting is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Meeting not found"
+        )
+
+    # AI cannot analyse a meeting if extraction produced no text.
+    if not meeting.raw_text:
+        raise HTTPException(
+            status_code=400,
+            detail="Meeting does not contain extracted text"
+        )
+
+    # Give a clearer error if Ollama itself is offline.
+    if not check_ollama_running():
+        raise HTTPException(
+            status_code=503,
+            detail="Ollama is not running"
+        )
+
+    try:
+        result = analyse_meeting(meeting.raw_text)
+
+    except (RuntimeError, ValueError) as error:
+        raise HTTPException(
+            status_code=500,
+            detail=str(error)
+        ) from error
+
+    return result
 
 
 # ---------------------------------------------------------------------------

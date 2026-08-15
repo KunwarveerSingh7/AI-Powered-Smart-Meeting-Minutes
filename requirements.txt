@@ -12,3 +12,5 @@ requests
 python-dotenv
 email-validator
 jinja2
+pypdf
+python-docx

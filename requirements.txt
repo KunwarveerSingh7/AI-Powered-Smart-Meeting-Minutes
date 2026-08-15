@@ -8,6 +8,7 @@ passLib[bcrypt]
 bcrypt==4.3.0
 sqlalchemy
 ollama
+requests
 python-dotenv
 email-validator
 jinja2

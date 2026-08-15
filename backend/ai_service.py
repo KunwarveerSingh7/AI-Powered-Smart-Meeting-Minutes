@@ -1,12 +1,4 @@
-meetings = 20
-action_items = 86
-deadline_meetings = 14
-manager_review = 6
 
-average_actions = action_items / meetings
-
-print("Average actions:", average_actions)
-print("Meetings needing review:", manager_review)
 
 """
 ai_service.py
@@ -94,6 +86,7 @@ def analyse_meeting(meeting_text: str, model: str = PRIMARY_MODEL) -> dict:
         "model": model,
         "prompt": prompt,
         "stream": False,
+        "format": "json",
         "options": {
             "temperature": 0.1,
             "top_p": 0.9,

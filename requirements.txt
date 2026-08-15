@@ -1,8 +1,16 @@
 fastapi
 uvicorn[standard]
 python-multipart
+python-docx
+pypdf
 python-jose[cryptography]
 passLib[bcrypt]
+bcrypt==4.3.0
 sqlalchemy
 ollama
+requests
 python-dotenv
+email-validator
+jinja2
+pypdf
+python-docx

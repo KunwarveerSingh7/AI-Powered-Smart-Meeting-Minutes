@@ -1,0 +1,27 @@
+﻿Project Meeting
+
+
+Date: 13 August 2026
+
+
+Attendees:
+Rayyan
+John
+Sarah
+
+
+Discussion:
+The team discussed completing the login system.
+
+
+Decision:
+The database module will be completed this week.
+
+
+Action Items:
+Rayyan will test the database.
+Sarah will prepare the documentation.
+
+
+Deadline:
+17 August 2026.

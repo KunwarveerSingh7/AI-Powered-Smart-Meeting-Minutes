@@ -1,0 +1,143 @@
+<!Doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, intial-scale=1.0">
+
+    <title> Manager Dashboard</title>
+  </head>
+  <body>
+    <div class="dashboard">
+      <h1>Manager Dashboard</h1>
+
+      <!-- TODO: The welcome message should be like Welcome 'employee name' -->
+      <p id="welcome_message">
+        Welcome
+      </p>
+
+      <hr>
+
+      <!-- Option to add the meeting minutes -->
+      <h2>Team Manageer</h2>
+
+      <button type="button" id="showEmployeeForm">
+        Add new employee </button>
+
+      <div id="employeeFormContainer" style="display: none;">
+          <h3>Add Employee</h3>
+      <form id="employeeForm">
+            <div>
+            <label for="employeeEmail">Email</label>
+            <input type="email" id="employeeEmail"  required>
+            </div>
+
+            <div>
+            <label for="employeePassword">Temporary Password</label>
+            <input type="password" id="employeePassword" required>
+            </div>
+
+            <br>
+
+            <button type="submit">Add Employee</button>
+          </form>
+
+          <p id="employeeMessage"></p>
+      </div>
+
+    <hr>
+
+        <h2>Employee List</h2>
+
+        <button type="button" id="refreshEmployees">
+
+          Show Employee List </button>
+
+          <div id="employeeList">
+            No employees found.
+          </div>
+
+
+         <hr>
+         
+         <h2>Meeting Minutes</h2>
+
+<!-- Button used to open the meeting upload form -->
+<button type="button" id="showMeetingForm">
+    Upload Meeting Minutes
+</button>
+
+<!-- Hidden until the manager clicks Upload Meeting Minutes -->
+<div id="meetingFormContainer" style="display: none;">
+
+    <h3>Upload Meeting</h3>
+
+    <form id="meetingUploadForm">
+
+        <!-- Manager enters a name/title for the meeting -->
+        <div>
+            <label for="meetingTitle">Meeting Title</label>
+            <input type="text" id="meetingTitle" required>
+        </div>
+
+        <br>
+
+        <!-- Date when the meeting took place -->
+        <div>
+            <label for="meetingDate">Meeting Date</label>
+            <input type="date" id="meetingDate" required>
+        </div>
+
+        <br>
+
+        <!-- Manager selects the actual meeting minutes document -->
+        <div>
+            <label for="meetingFile">Meeting File</label>
+            <input
+                type="file"
+                id="meetingFile"
+                accept=".pdf,.docx,.txt"
+                required
+            >
+        </div>
+
+        <br>
+
+        <button type="submit">
+            Upload Meeting
+        </button>
+
+    </form>
+
+    <!-- Success/error messages from JavaScript appear here -->
+    <p id="meetingUploadMessage"></p>
+
+</div>
+
+
+
+      <h2>project</h2>
+
+      <button>
+        task viewer
+      </button>
+
+      <button>
+      analytics
+      </button>
+
+      <br><br>
+
+      <button onclick="logout()">
+            Logout
+      </button>
+
+    </div>
+
+    <script src ="/static/manager_dashboard.js"></script>
+
+
+
+
+  </body>
+</html>

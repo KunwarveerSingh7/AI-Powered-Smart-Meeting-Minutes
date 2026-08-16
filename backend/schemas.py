@@ -23,6 +23,8 @@ class EmployeeCreate(BaseModel):
     # What a manager sends when creating an employee account.
     email: EmailStr
     password: str
+    name: str
+    position: str
 
 
 class UserOut(BaseModel):
@@ -31,6 +33,14 @@ class UserOut(BaseModel):
     id: int
     email: str
     role: str
+    name: Optional[str] = None
+    position: Optional[str] = None
+
+    class Config:
+        # Lets Pydantic read values from a SQLAlchemy object rather than a
+        # plain dictionary. Without this, returning a User row would fail.
+        # This must be spelled "Config" with a capital C or it is ignored.
+        from_attributes = True
 
     class Config:
         # Lets Pydantic read values from a SQLAlchemy object rather than a

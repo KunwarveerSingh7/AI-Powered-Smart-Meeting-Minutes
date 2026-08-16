@@ -54,6 +54,11 @@ const employeeForm = document.getElementById("employeeForm");
 const employeeMessage = document.getElementById("employeeMessage");
 const employeeList = document.getElementById("employeeList");
 const refreshEmployees = document.getElementById("refreshEmployees");
+const refreshMeetings =
+    document.getElementById("refreshMeetings");
+
+const meetingHistory =
+    document.getElementById("meetingHistory");
 
 
 // This button just shows the employee creation form.
@@ -169,6 +174,256 @@ async function loadEmployees() {
 }
 
 
+async function loadManagerMeetings() {
+
+    try {
+        const response = await fetch(
+            "/manager/meetings",
+            {
+                headers: {
+                    "Authorization":
+                        "Bearer " + token
+                }
+            }
+        );
+
+        if (!response.ok) {
+            meetingHistory.textContent =
+                "Could not load meetings.";
+            return;
+        }
+
+        const meetings =
+            await response.json();
+
+        meetingHistory.innerHTML = "";
+
+        if (meetings.length === 0) {
+            meetingHistory.textContent =
+                "No meetings available.";
+            return;
+        }
+
+        meetings.forEach(function (meeting) {
+
+            const meetingBox =
+                document.createElement("div");
+
+            const title =
+                document.createElement("h3");
+
+            title.textContent =
+                meeting.title +
+                " (Meeting ID: " +
+                meeting.id +
+                ")";
+
+            const status =
+                document.createElement("p");
+
+            status.textContent =
+                "Status: " +
+                meeting.status;
+
+            const file =
+                document.createElement("p");
+
+            file.textContent =
+                "File: " +
+                meeting.original_filename;
+
+            const published =
+                document.createElement("p");
+
+            published.textContent =
+                "Published: " +
+                (
+                    meeting.published_at
+                        ? new Date(
+                            meeting.published_at
+                        ).toLocaleString()
+                        : "Not published"
+                );
+
+            const detailsButton =
+                document.createElement("button");
+
+            detailsButton.textContent =
+                "View Details";
+
+            const reviewButton =
+                document.createElement("button");
+
+            reviewButton.textContent =
+                "Open Review";
+
+            const detailsBox =
+                document.createElement("div");
+
+            detailsBox.style.display =
+                "none";
+
+            detailsButton.onclick =
+                function () {
+
+                    if (
+                        detailsBox.style.display ===
+                        "none"
+                    ) {
+                        detailsBox.style.display =
+                            "block";
+
+                        detailsButton.textContent =
+                            "Hide Details";
+
+                    } else {
+                        detailsBox.style.display =
+                            "none";
+
+                        detailsButton.textContent =
+                            "View Details";
+                    }
+                };
+
+            reviewButton.onclick =
+                function () {
+
+                    window.location.href =
+                        "/meeting-review/" +
+                        meeting.id;
+                };
+
+
+            // Extracted meeting text
+            const extractedTitle =
+                document.createElement("h4");
+
+            extractedTitle.textContent =
+                "Extracted Meeting Text";
+
+            const extractedText =
+                document.createElement("pre");
+
+            extractedText.textContent =
+                meeting.raw_text ||
+                "No extracted text available.";
+
+
+            // AI summary
+            const summaryTitle =
+                document.createElement("h4");
+
+            summaryTitle.textContent =
+                "Meeting Summary";
+
+            const summaryText =
+                document.createElement("p");
+
+            summaryText.textContent =
+                meeting.ai_summary ||
+                "No summary available.";
+
+
+            // Decisions
+            const decisionsTitle =
+                document.createElement("h4");
+
+            decisionsTitle.textContent =
+                "Decisions";
+
+            const decisionsContainer =
+                document.createElement("div");
+
+            if (
+                meeting.decisions &&
+                meeting.decisions.length > 0
+            ) {
+                meeting.decisions.forEach(
+                    function (decision) {
+
+                        const decisionItem =
+                            document.createElement("p");
+
+                        decisionItem.textContent =
+                            "• " +
+                            decision.decision_text;
+
+                        decisionsContainer.appendChild(
+                            decisionItem
+                        );
+                    }
+                );
+
+            } else {
+                decisionsContainer.textContent =
+                    "No decisions available.";
+            }
+
+
+            detailsBox.appendChild(
+                extractedTitle
+            );
+
+            detailsBox.appendChild(
+                extractedText
+            );
+
+            detailsBox.appendChild(
+                summaryTitle
+            );
+
+            detailsBox.appendChild(
+                summaryText
+            );
+
+            detailsBox.appendChild(
+                decisionsTitle
+            );
+
+            detailsBox.appendChild(
+                decisionsContainer
+            );
+
+
+            meetingBox.appendChild(title);
+            meetingBox.appendChild(status);
+            meetingBox.appendChild(file);
+            meetingBox.appendChild(published);
+
+            meetingBox.appendChild(
+                detailsButton
+            );
+
+            meetingBox.appendChild(
+                reviewButton
+            );
+
+            meetingBox.appendChild(
+                detailsBox
+            );
+
+            meetingBox.appendChild(
+                document.createElement("hr")
+            );
+
+            meetingHistory.appendChild(
+                meetingBox
+            );
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Meeting history error:",
+            error
+        );
+
+        meetingHistory.textContent =
+            "Unable to load meetings.";
+    }
+}
+
+
 // Lets the manager manually refresh the employee list.
 refreshEmployees.addEventListener("click", function () {
     loadEmployees();
@@ -195,6 +450,10 @@ showMeetingForm.addEventListener("click", function () {
     meetingFormContainer.style.display = "block";
 });
 
+refreshMeetings.addEventListener(
+    "click",
+    loadManagerMeetings
+);
 
 // Runs when manager submits the meeting minutes form
 meetingUploadForm.addEventListener("submit", async function (event) {
@@ -264,28 +523,77 @@ meetingUploadForm.addEventListener("submit", async function (event) {
         }
 
 
-        // Let manager know that upload worked
-        meetingUploadMessage.textContent =
-            "Meeting uploaded successfully.";
-
-        // Clear the form after successful upload
-        meetingUploadForm.reset();
+        // Meeting upload worked.
+// Tell the manager that AI analysis is now starting.
+meetingUploadMessage.textContent =
+    "Meeting uploaded. AI analysis is running...";
 
 
-        // Backend gives us the ID of the new meeting.
-        // Use it to open the review page for that specific meeting.
-        window.location.href =
-            "/meeting-review/" + data.meeting_id;
+// Automatically analyse the newly uploaded meeting.
+const analyseResponse = await fetch(
+    "/meetings/" +
+    data.meeting_id +
+    "/analyse",
+    {
+        method: "POST",
 
-
-    } catch (error) {
-
-        // This normally happens if frontend cannot reach the backend
-        // or another unexpected connection problem happens.
-        console.error("Meeting upload error:", error);
-
-        meetingUploadMessage.textContent =
-            "Unable to upload meeting.";
+        headers: {
+            "Authorization":
+                "Bearer " + token
+        }
     }
+);
+
+
+// Read the AI analysis response.
+const analyseData =
+    await analyseResponse.json();
+
+
+// The file was uploaded successfully,
+// but something went wrong during AI analysis.
+if (!analyseResponse.ok) {
+
+    meetingUploadMessage.textContent =
+        analyseData.detail ||
+        "Meeting uploaded, but AI analysis failed.";
+
+    return;
+}
+
+
+// Upload, text extraction and AI analysis
+// have all completed successfully.
+meetingUploadMessage.textContent =
+    "Meeting analysed successfully. Opening review...";
+
+
+// Clear the upload form.
+meetingUploadForm.reset();
+
+
+// Open the meeting review page.
+// The AI summary, decisions and generated tasks
+// should already be available there.
+window.location.href =
+    "/meeting-review/" +
+    data.meeting_id;
+
+
+} catch (error) {
+
+    console.error(
+        "Meeting upload/analysis error:",
+        error
+    );
+
+    meetingUploadMessage.textContent =
+        "Unable to upload or analyse meeting.";
+}
 
 });
+
+
+// Automatically load manager meeting history
+// when the manager dashboard opens.
+loadManagerMeetings();

@@ -603,6 +603,264 @@ def update_decision(
         "id": decision.id,
         "decision_text": decision.decision_text
     }
+
+
+# ---------------------------------------------------------------
+# Publish reviewed meeting
+# ---------------------------------------------------------------
+
+@app.put("/meetings/{meeting_id}/publish")
+def publish_meeting(
+    meeting_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    if current_user["role"] != "manager":
+        raise HTTPException(
+            status_code=403,
+            detail="Only managers can publish meetings",
+        )
+
+    meeting = (
+        db.query(models.Meeting)
+        .filter(models.Meeting.id == meeting_id)
+        .first()
+    )
+
+    if meeting is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Meeting not found",
+        )
+
+    if not meeting.ai_summary:
+        raise HTTPException(
+            status_code=400,
+            detail="Meeting must be analysed before publishing",
+        )
+
+    meeting.status = "published"
+    meeting.published_at = datetime.now()
+
+    try:
+        db.commit()
+        db.refresh(meeting)
+
+    except Exception as error:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=500,
+            detail="Meeting could not be published",
+        ) from error
+
+    return {
+        "message": "Meeting published successfully",
+        "meeting_id": meeting.id,
+        "status": meeting.status,
+        "published_at": meeting.published_at,
+    }
+
+
+@app.get("/manager/meetings")
+def get_manager_meetings(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    if current_user["role"] != "manager":
+        raise HTTPException(
+            status_code=403,
+            detail="Manager access only",
+        )
+
+    meetings = (
+        db.query(models.Meeting)
+        .order_by(models.Meeting.id.desc())
+        .all()
+    )
+
+    return [
+        {
+            "id": meeting.id,
+            "title": meeting.title,
+            "meeting_date": meeting.meeting_date,
+            "original_filename": meeting.original_filename,
+            "raw_text": meeting.raw_text,
+            "ai_summary": meeting.ai_summary,
+            "status": meeting.status,
+            "published_at": meeting.published_at,
+            "decisions": [
+                {
+                    "id": decision.id,
+                    "decision_text": decision.decision_text,
+                }
+                for decision in meeting.decisions
+            ],
+        }
+        for meeting in meetings
+    ]
+
+@app.get("/employee/meetings")
+def get_employee_meetings(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    # Only employees can use this endpoint.
+    if current_user["role"] != "employee":
+        raise HTTPException(
+            status_code=403,
+            detail="Employee access only",
+        )
+
+    employee = (
+        db.query(models.User)
+        .filter(
+            models.User.email ==
+            current_user["email"]
+        )
+        .first()
+    )
+
+    if employee is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Employee not found",
+        )
+
+    # Find published meetings where this employee
+    # has at least one assigned task.
+    meetings = (
+        db.query(models.Meeting)
+        .join(
+            models.Task,
+            models.Task.meeting_id ==
+            models.Meeting.id,
+        )
+        .join(
+            models.TaskAssignment,
+            models.TaskAssignment.task_id ==
+            models.Task.id,
+        )
+        .filter(
+            models.TaskAssignment.user_id ==
+            employee.id,
+
+            models.Meeting.status ==
+            "published",
+        )
+        .distinct()
+        .order_by(
+            models.Meeting.id.desc()
+        )
+        .all()
+    )
+
+    return [
+        {
+            "id": meeting.id,
+            "title": meeting.title,
+            "meeting_date":
+                meeting.meeting_date,
+            "status": meeting.status,
+            "published_at":
+                meeting.published_at,
+                "raw_text": meeting.raw_text,
+
+            "ai_summary":
+                meeting.ai_summary,
+
+            "decisions": [
+                {
+                    "id": decision.id,
+                    "decision_text":
+                        decision.decision_text,
+                }
+                for decision
+                in meeting.decisions
+            ],
+        }
+        for meeting in meetings
+    ]
+# ---------------------------------------------------------------
+# Employee access to published meeting
+# ---------------------------------------------------------------
+
+@app.get("/employee/meetings/{meeting_id}")
+def get_employee_meeting(
+    meeting_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    if current_user["role"] != "employee":
+        raise HTTPException(
+            status_code=403,
+            detail="Employee access only",
+        )
+
+    employee = (
+        db.query(models.User)
+        .filter(
+            models.User.email == current_user["email"]
+        )
+        .first()
+    )
+
+    if employee is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Employee not found",
+        )
+
+    meeting = (
+        db.query(models.Meeting)
+        .filter(models.Meeting.id == meeting_id)
+        .first()
+    )
+
+    if meeting is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Meeting not found",
+        )
+
+    if meeting.status != "published":
+        raise HTTPException(
+            status_code=403,
+            detail="Meeting has not been published",
+        )
+
+    assigned_task = (
+        db.query(models.TaskAssignment)
+        .join(
+            models.Task,
+            models.TaskAssignment.task_id == models.Task.id,
+        )
+        .filter(
+            models.Task.meeting_id == meeting_id,
+            models.TaskAssignment.user_id == employee.id,
+        )
+        .first()
+    )
+
+    if assigned_task is None:
+        raise HTTPException(
+            status_code=403,
+            detail="You do not have access to this meeting",
+        )
+
+    return {
+        "id": meeting.id,
+        "title": meeting.title,
+        "meeting_date": meeting.meeting_date,
+        "ai_summary": meeting.ai_summary,
+        "decisions": [
+            {
+                "id": decision.id,
+                "decision_text": decision.decision_text,
+            }
+            for decision in meeting.decisions
+        ],
+    }
  
  
 # ---------------------------------------------------------------------------
@@ -939,18 +1197,69 @@ def get_tasks(
         tasks = db.query(models.Task).all()
     else:
         tasks = (
-            db.query(models.Task)
-            .join(models.TaskAssignment)
-            .filter(models.TaskAssignment.user_id == user.id)
-            .distinct()
-            .all()
+    db.query(models.Task)
+    .join(models.TaskAssignment)
+    .filter(
+        models.TaskAssignment.user_id == user.id,
+        models.Task.status.notin_(
+            ["completed", "cancelled"]
         )
+    )
+    .distinct()
+    .all()
+)
+        
  
     return [
         _task_to_response(task)
         for task in tasks
     ]
- 
+
+
+@app.get(
+    "/tasks/history",
+    response_model=list[schemas.TaskOut],
+)
+def get_task_history(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    user = _get_database_user(
+        db,
+        current_user
+    )
+
+    if user.role == "manager":
+
+        tasks = (
+            db.query(models.Task)
+            .filter(
+                models.Task.status.in_(
+                    ["completed", "cancelled"]
+                )
+            )
+            .all()
+        )
+
+    else:
+
+        tasks = (
+            db.query(models.Task)
+            .join(models.TaskAssignment)
+            .filter(
+                models.TaskAssignment.user_id == user.id,
+                models.Task.status.in_(
+                    ["completed", "cancelled"]
+                )
+            )
+            .distinct()
+            .all()
+        )
+
+    return [
+        _task_to_response(task)
+        for task in tasks
+    ]
  
 @app.get(
     "/tasks/{task_id}",
@@ -977,7 +1286,65 @@ def get_task(
             )
  
     return _task_to_response(task)
- 
+
+
+
+@app.get("/tasks/{task_id}/updates")
+def get_task_updates(
+    task_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    user = _get_database_user(
+        db,
+        current_user
+    )
+
+    task = _get_task_or_404(
+        db,
+        task_id
+    )
+
+    # Managers can view any task history.
+    # Employees can only view history for tasks
+    # that are assigned to them.
+    if user.role != "manager":
+
+        is_assigned = any(
+            assignment.user_id == user.id
+            for assignment in task.assignments
+        )
+
+        if not is_assigned:
+            raise HTTPException(
+                status_code=403,
+                detail="Not allowed to view this task history"
+            )
+
+    updates = (
+        db.query(models.TaskUpdate)
+        .filter(
+            models.TaskUpdate.task_id == task_id
+        )
+        .order_by(
+            models.TaskUpdate.created_at.desc()
+        )
+        .all()
+    )
+
+    return [
+        {
+            "id": update.id,
+            "task_id": update.task_id,
+            "updated_by": update.updated_by,
+            "status": update.status,
+            "progress_percentage":
+                update.progress_percentage,
+            "comment": update.comment,
+            "created_at": update.created_at
+        }
+        for update in updates
+    ]
  
 @app.put(
     "/tasks/{task_id}",
@@ -991,48 +1358,113 @@ def update_task(
 ):
     user = _get_database_user(db, current_user)
     task = _get_task_or_404(db, task_id)
- 
+
     update_data = task_update.model_dump(exclude_unset=True)
     fields_requested = task_update.model_fields_set
- 
+
     assignment_change_requested = (
         "assigned_user_ids" in fields_requested
     )
+
     progress_requested = (
         "progress_percentage" in fields_requested
     )
-    comment_requested = "comment" in fields_requested
- 
+
+    comment_requested = (
+        "comment" in fields_requested
+    )
+
     assigned_user_ids = update_data.pop(
         "assigned_user_ids",
         None,
     )
+
     progress_percentage = update_data.pop(
         "progress_percentage",
         None,
     )
+
     comment = update_data.pop(
         "comment",
         None,
     )
- 
+
+    # -----------------------------------------------------------
+    # Find current/latest task progress
+    # -----------------------------------------------------------
+
+    latest_update = (
+        db.query(models.TaskUpdate)
+        .filter(
+            models.TaskUpdate.task_id == task.id
+        )
+        .order_by(
+            models.TaskUpdate.created_at.desc(),
+            models.TaskUpdate.id.desc(),
+        )
+        .first()
+    )
+
+    current_progress = (
+        latest_update.progress_percentage
+        if latest_update
+        else 0
+    )
+
+    requested_status = update_data.get(
+        "status",
+        task.status,
+    )
+
+    # -----------------------------------------------------------
+    # Employee permissions and progress rules
+    # -----------------------------------------------------------
+
     if user.role != "manager":
+
         is_assigned = any(
             assignment.user_id == user.id
             for assignment in task.assignments
         )
- 
+
         if not is_assigned:
             raise HTTPException(
                 status_code=403,
                 detail="Not allowed to edit this task",
             )
- 
-        # Employees may update their task status/progress/comment,
-        # but cannot change task details or assignments.
-        disallowed_fields = set(update_data) - {"status"}
- 
-        if disallowed_fields or assignment_change_requested:
+
+        # Employees cannot reopen a completed task.
+        if (
+            task.status == "completed"
+            and requested_status != "completed"
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="A completed task cannot be reopened",
+            )
+
+        # Employees cannot decrease progress.
+        if (
+            progress_percentage is not None
+            and progress_percentage < current_progress
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Progress cannot decrease from "
+                    f"{current_progress}%"
+                ),
+            )
+
+        # Employees may update status, progress and comment only.
+        disallowed_fields = (
+            set(update_data) - {"status"}
+        )
+
+        if (
+            disallowed_fields
+            or assignment_change_requested
+        ):
             raise HTTPException(
                 status_code=403,
                 detail=(
@@ -1040,35 +1472,73 @@ def update_task(
                     "status, progress and comments"
                 ),
             )
- 
-    if user.role == "manager" and assignment_change_requested:
+
+    # -----------------------------------------------------------
+    # Progress rules
+    # -----------------------------------------------------------
+
+    # Completed always means 100%.
+    if requested_status == "completed":
+        progress_percentage = 100
+
+    # Preserve latest progress if no new percentage was supplied.
+    effective_progress = (
+        progress_percentage
+        if progress_percentage is not None
+        else current_progress
+    )
+
+    # -----------------------------------------------------------
+    # Manager assignment changes
+    # -----------------------------------------------------------
+
+    if (
+        user.role == "manager"
+        and assignment_change_requested
+    ):
         validated_ids = _validate_assigned_users(
             db,
             assigned_user_ids or [],
         )
- 
-        # Reuse existing assignment rows where possible so the
-        # task_id/user_id unique constraint is not violated.
+
         existing_assignments = {
             assignment.user_id: assignment
             for assignment in task.assignments
         }
- 
+
         task.assignments = [
             existing_assignments.get(user_id)
-            or models.TaskAssignment(user_id=user_id)
+            or models.TaskAssignment(
+                user_id=user_id
+            )
             for user_id in validated_ids
         ]
- 
+
+    # -----------------------------------------------------------
+    # Apply normal task field updates
+    # -----------------------------------------------------------
+
     for field, value in update_data.items():
-        if field in {"title", "status", "priority"} and value is None:
+
+        if (
+            field in {
+                "title",
+                "status",
+                "priority"
+            }
+            and value is None
+        ):
             raise HTTPException(
                 status_code=422,
                 detail=f"{field} cannot be null",
             )
- 
+
         setattr(task, field, value)
- 
+
+    # -----------------------------------------------------------
+    # Save task update history
+    # -----------------------------------------------------------
+
     if (
         "status" in fields_requested
         or progress_requested
@@ -1078,27 +1548,29 @@ def update_task(
             models.TaskUpdate(
                 updated_by=user.id,
                 status=task.status,
-                progress_percentage=(
-                    progress_percentage
-                    if progress_percentage is not None
-                    else 0
-                ),
+                progress_percentage=
+                    effective_progress,
                 comment=comment,
             )
         )
- 
+
+    # -----------------------------------------------------------
+    # Commit changes
+    # -----------------------------------------------------------
+
     try:
         db.commit()
         db.refresh(task)
+
     except Exception as exc:
         db.rollback()
+
         raise HTTPException(
             status_code=500,
             detail="Task could not be updated",
         ) from exc
- 
+
     return _task_to_response(task)
- 
  
 @app.delete("/tasks/{task_id}")
 def delete_task(

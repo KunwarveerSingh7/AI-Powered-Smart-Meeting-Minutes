@@ -602,6 +602,62 @@ async function saveTask(
     }
 }
 
+async function publishMeeting() {
+
+    const parts =
+        window.location.pathname.split("/");
+
+    const meetingId =
+        parts[parts.length - 1];
+
+    const message =
+        document.getElementById(
+            "publishMessage"
+        );
+
+    try {
+
+        const response = await fetch(
+            "/meetings/" +
+            meetingId +
+            "/publish",
+            {
+                method: "PUT",
+
+                headers: {
+                    "Authorization":
+                        "Bearer " + token
+                }
+            }
+        );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+
+            message.textContent =
+                data.detail ||
+                "Could not publish meeting.";
+
+            return;
+        }
+
+        message.textContent =
+            "Meeting published successfully.";
+
+    } catch (error) {
+
+        console.error(
+            "Meeting publish error:",
+            error
+        );
+
+        message.textContent =
+            "Unable to publish meeting.";
+    }
+}
+
 
 function goBack() {
     window.location.href =

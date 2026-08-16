@@ -24,7 +24,7 @@ import requests
 OLLAMA_URL      = "http://localhost:11434/api/generate"
 PRIMARY_MODEL   = "llama3"
 FALLBACK_MODEL  = "mistral"
-TIMEOUT_SECONDS = 120
+TIMEOUT_SECONDS = 300
 
 # ---------------------------------------------------------------------------
 # System prompt
@@ -34,9 +34,14 @@ SYSTEM_PROMPT = """You are a meeting minutes analyst. Extract structured informa
 from the meeting text provided.
 
 STRICT RULES — follow every rule exactly:
-1. DO NOT invent, guess or infer deadlines, dates, names or any other detail \
-that is not explicitly written in the meeting text.
-2. If a deadline is not stated word-for-word, set "deadline" to null.
+1. DO NOT invent or guess deadlines, dates, names or other details that \
+are not explicitly stated in the meeting text.
+2. A deadline is considered explicitly stated when the action item contains \
+a specific date, for example "18 August 2026", "August 18, 2026", \
+"18/08/2026", or "2026-08-18". Convert explicitly stated dates to \
+YYYY-MM-DD format. For example, "18 August 2026" must become "2026-08-18". \
+Only set "deadline" to null when no specific deadline date is stated for \
+that action item.
 3. If an assignee is not named explicitly, set "assignee" to null.
 4. If a priority is not mentioned, set "priority" to "null".
 5. Return ONLY a valid JSON object. No explanation. No markdown fences. \
@@ -52,7 +57,7 @@ REQUIRED OUTPUT FORMAT (use exactly these keys):
     {
       "task": "Clear description of the task.",
       "assignee": "Full name as written in the text, or null",
-      "deadline": "YYYY-MM-DD if a date was stated, otherwise null",
+      "deadline": "Convert the explicitly stated deadline to YYYY-MM-DD. Use null only if no deadline date is stated for this task.",
       "priority": "high, medium, or low",
       "notes": "Any extra context about this task, or null"
     }
@@ -60,7 +65,22 @@ REQUIRED OUTPUT FORMAT (use exactly these keys):
   "flags": [
     "Any ambiguity, missing information or item needing manager attention."
   ]
-}"""
+}
+
+DEADLINE EXAMPLES:
+- "Rayyan will test the system by 18 August 2026."
+  -> "deadline": "2026-08-18"
+
+- "Obi will finish testing by 21 August 2026."
+  -> "deadline": "2026-08-21"
+
+- "Manuel will prepare the report. No deadline was decided."
+  -> "deadline": null
+
+IMPORTANT:
+A written date such as "18 August 2026" IS an explicit deadline.
+Converting its format to "2026-08-18" is required and is NOT inventing a date.
+"""
 
 
 # ---------------------------------------------------------------------------

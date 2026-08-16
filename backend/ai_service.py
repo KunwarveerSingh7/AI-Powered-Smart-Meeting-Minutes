@@ -177,6 +177,15 @@ def _parse_response(raw_text: str) -> dict:
     data.setdefault("action_items", [])
     data.setdefault("flags", [])
 
+    # Ollama may sometimes return null or empty values inside the flags list.
+# Remove those values so that no unnecessary blank warning appears
+# on the manager review page.
+    data["flags"] = [
+    flag
+    for flag in data["flags"]
+    if flag is not None and str(flag).strip()
+    ]
+
     # Normalise and annotate each action item
     normalised_items = []
     for item in data["action_items"]:

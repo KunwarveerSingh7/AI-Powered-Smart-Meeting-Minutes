@@ -525,7 +525,14 @@ def analyse_meeting_route(
             detail="Ollama is not running"
         )
 
+    # ---------------------------------------------------------------
+    # Run AI analysis
+    # ---------------------------------------------------------------
+
     try:
+        # Send the extracted meeting text to our AI service.
+        # The result contains:
+        # summary, decisions, action_items and flags.
         result = analyse_meeting(meeting.raw_text)
 
     except (RuntimeError, ValueError) as error:
@@ -534,7 +541,186 @@ def analyse_meeting_route(
             detail=str(error)
         ) from error
 
-    return result
+
+    # ---------------------------------------------------------------
+    # Find the manager in the database
+    # ---------------------------------------------------------------
+
+    # Tasks require a created_by user ID.
+    # The JWT contains the manager's email, so use that email
+    # to find the corresponding User database record.
+    manager = (
+        db.query(models.User)
+        .filter(
+            models.User.email == current_user["email"]
+        )
+        .first()
+    )
+
+    if manager is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Manager account not found"
+        )
+
+
+    # ---------------------------------------------------------------
+    # Remove previous AI results
+    # ---------------------------------------------------------------
+
+    # The manager may run the analysis more than once while the
+    # meeting is still being reviewed.
+    #
+    # Delete the previous decisions and tasks for this meeting
+    # before storing the newly generated results. This prevents
+    # duplicate records.
+
+    db.query(models.Decision).filter(
+        models.Decision.meeting_id == meeting.id
+    ).delete()
+
+    db.query(models.Task).filter(
+        models.Task.meeting_id == meeting.id
+    ).delete()
+
+
+    # ---------------------------------------------------------------
+    # Save AI summary
+    # ---------------------------------------------------------------
+
+    # ai_summary already exists as a column in the Meeting model.
+    meeting.ai_summary = result.get("summary")
+
+
+    # ---------------------------------------------------------------
+    # Save AI decisions
+    # ---------------------------------------------------------------
+
+    for decision_text in result.get("decisions", []):
+
+        # Ignore null or empty decisions.
+        if not decision_text:
+            continue
+
+        decision = models.Decision(
+            meeting_id=meeting.id,
+            decision_text=decision_text
+        )
+
+        db.add(decision)
+
+
+    # ---------------------------------------------------------------
+    # Save AI action items as tasks
+    # ---------------------------------------------------------------
+
+    for item in result.get("action_items", []):
+
+        task_title = item.get("task")
+
+        # Ignore an invalid AI action item with no task title.
+        if not task_title:
+            continue
+
+
+        # -----------------------------------------------------------
+        # Convert AI deadline
+        # -----------------------------------------------------------
+
+        # Llama returns deadlines as YYYY-MM-DD strings.
+        # SQLAlchemy expects a Python datetime for due_date.
+        due_date = None
+
+        deadline = item.get("deadline")
+
+        if deadline:
+            try:
+                due_date = datetime.strptime(
+                    deadline,
+                    "%Y-%m-%d"
+                )
+            except ValueError:
+                # If AI somehow returns an invalid date,
+                # leave the deadline empty for manager review.
+                due_date = None
+
+
+        # -----------------------------------------------------------
+        # Preserve AI assignee and notes
+        # -----------------------------------------------------------
+
+        description_parts = []
+
+        # We are NOT automatically assigning an employee account yet.
+        # The AI gives us a person's name, while the database assignment
+        # system uses user IDs. The manager will confirm this later.
+        if item.get("assignee"):
+            description_parts.append(
+                "AI extracted assignee: "
+                + str(item["assignee"])
+            )
+
+        if item.get("notes"):
+            description_parts.append(
+                str(item["notes"])
+            )
+
+        description = (
+            "\n".join(description_parts)
+            if description_parts
+            else None
+        )
+
+
+        # -----------------------------------------------------------
+        # Create database Task
+        # -----------------------------------------------------------
+
+        new_task = models.Task(
+            meeting_id=meeting.id,
+            created_by=manager.id,
+            title=task_title,
+            description=description,
+            due_date=due_date,
+            priority=item.get("priority", "medium"),
+            status="pending"
+        )
+
+        db.add(new_task)
+
+
+    # ---------------------------------------------------------------
+    # Commit all AI results
+    # ---------------------------------------------------------------
+
+    try:
+        db.commit()
+        db.refresh(meeting)
+
+    except Exception as error:
+
+        # Undo the database transaction if saving failed.
+        db.rollback()
+
+        # TEMPORARY DEBUGGING:
+        # Print the actual database error in the terminal.
+        print("DATABASE SAVE ERROR:", repr(error))
+
+        raise HTTPException(
+            status_code=500,
+            detail="AI analysis succeeded but results could not be saved"
+        ) from error
+
+
+    # ---------------------------------------------------------------
+    # Return successful result
+    # ---------------------------------------------------------------
+
+    return {
+        "message": "Meeting analysed and AI results saved successfully",
+        "meeting_id": meeting.id,
+        "analysis": result
+    }
 
 
 # ---------------------------------------------------------------------------

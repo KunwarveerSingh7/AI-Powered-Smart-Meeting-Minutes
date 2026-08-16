@@ -38,7 +38,7 @@ STRICT RULES — follow every rule exactly:
 that is not explicitly written in the meeting text.
 2. If a deadline is not stated word-for-word, set "deadline" to null.
 3. If an assignee is not named explicitly, set "assignee" to null.
-4. If a priority is not mentioned, set "priority" to "medium".
+4. If a priority is not mentioned, set "priority" to "null".
 5. Return ONLY a valid JSON object. No explanation. No markdown fences. \
 No extra text before or after the JSON.
 

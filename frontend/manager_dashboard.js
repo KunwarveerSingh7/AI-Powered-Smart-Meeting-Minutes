@@ -173,6 +173,181 @@ async function loadEmployees() {
     }
 }
 
+async function loadManagerAnalytics() {
+    try {
+        const response = await fetch(
+            "/manager/analytics",
+            {
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            }
+        );
+
+        if (!response.ok) {
+            console.error("Could not load analytics.");
+            return;
+        }
+
+        const data = await response.json();
+
+        document.getElementById("totalMeetings").textContent =
+            data.meetings.total;
+
+        document.getElementById("draftMeetings").textContent =
+            data.meetings.draft;
+
+        document.getElementById("publishedMeetings").textContent =
+            data.meetings.published;
+
+        document.getElementById("totalTasks").textContent =
+            data.tasks.total;
+
+        document.getElementById("pendingTasks").textContent =
+            data.tasks.pending;
+
+        document.getElementById("inProgressTasks").textContent =
+            data.tasks.in_progress;
+
+        document.getElementById("completedTasks").textContent =
+            data.tasks.completed;
+
+        document.getElementById("overdueTasks").textContent =
+            data.tasks.overdue;
+
+        document.getElementById("completionPercentage").textContent =
+            data.completion_percentage + "%";
+
+    } catch (error) {
+        console.error("Analytics loading error:", error);
+    }
+}
+
+
+async function loadTeamAnalytics() {
+
+    try {
+
+        const response = await fetch(
+            "/manager/analytics/team",
+            {
+                headers: {
+                    "Authorization":
+                        "Bearer " + token
+                }
+            }
+        );
+
+        if (!response.ok) {
+            console.error(
+                "Could not load team analytics."
+            );
+            return;
+        }
+
+        const data =
+            await response.json();
+
+        const teamAnalytics =
+            document.getElementById(
+                "teamAnalytics"
+            );
+
+        const priorityBreakdown =
+            document.getElementById(
+                "priorityBreakdown"
+            );
+
+        const topEmployee =
+            document.getElementById(
+                "topEmployee"
+            );
+
+
+        teamAnalytics.innerHTML = "";
+
+        data.employees.forEach(
+            function (employee) {
+
+                const employeeBox =
+                    document.createElement("div");
+
+                employeeBox.innerHTML =
+                    "<h3>" +
+                    employee.email +
+                    "</h3>" +
+
+                    "<p>Total Tasks: " +
+                    employee.total_tasks +
+                    "</p>" +
+
+                    "<p>Pending: " +
+                    employee.pending_tasks +
+                    "</p>" +
+
+                    "<p>In Progress: " +
+                    employee.in_progress_tasks +
+                    "</p>" +
+
+                    "<p>Completed: " +
+                    employee.completed_tasks +
+                    "</p>" +
+
+                    "<p>Overdue: " +
+                    employee.overdue_tasks +
+                    "</p>" +
+
+                    "<p>Completion: " +
+                    employee.completion_percentage +
+                    "%</p><hr>";
+
+                teamAnalytics.appendChild(
+                    employeeBox
+                );
+            }
+        );
+
+
+        priorityBreakdown.innerHTML =
+            "<p>High: " +
+            data.priority_breakdown.high +
+            "</p>" +
+
+            "<p>Medium: " +
+            data.priority_breakdown.medium +
+            "</p>" +
+
+            "<p>Low: " +
+            data.priority_breakdown.low +
+            "</p>";
+
+
+        if (data.top_employee) {
+
+            topEmployee.innerHTML =
+                "<p>" +
+                data.top_employee.email +
+                "</p>" +
+
+                "<p>Completed Tasks: " +
+                data.top_employee.completed_tasks +
+                "</p>";
+
+        } else {
+
+            topEmployee.textContent =
+                "No employee data available.";
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Team analytics error:",
+            error
+        );
+    }
+}
+
 
 async function loadManagerMeetings() {
 
@@ -597,3 +772,5 @@ window.location.href =
 // Automatically load manager meeting history
 // when the manager dashboard opens.
 loadManagerMeetings();
+loadManagerAnalytics();
+loadTeamAnalytics();

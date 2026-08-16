@@ -781,6 +781,363 @@ def get_employee_meetings(
         }
         for meeting in meetings
     ]
+
+
+@app.get("/manager/analytics")
+def get_manager_analytics(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    if current_user["role"] != "manager":
+        raise HTTPException(
+            status_code=403,
+            detail="Manager access only",
+        )
+
+    now = datetime.now()
+
+    # -------------------------
+    # Meeting statistics
+    # -------------------------
+
+    total_meetings = (
+        db.query(models.Meeting)
+        .count()
+    )
+
+    draft_meetings = (
+        db.query(models.Meeting)
+        .filter(
+            models.Meeting.status == "draft"
+        )
+        .count()
+    )
+
+    published_meetings = (
+        db.query(models.Meeting)
+        .filter(
+            models.Meeting.status == "published"
+        )
+        .count()
+    )
+
+    # -------------------------
+    # Task statistics
+    # -------------------------
+
+    total_tasks = (
+        db.query(models.Task)
+        .count()
+    )
+
+    pending_tasks = (
+        db.query(models.Task)
+        .filter(
+            models.Task.status == "pending"
+        )
+        .count()
+    )
+
+    in_progress_tasks = (
+        db.query(models.Task)
+        .filter(
+            models.Task.status == "in_progress"
+        )
+        .count()
+    )
+
+    completed_tasks = (
+        db.query(models.Task)
+        .filter(
+            models.Task.status == "completed"
+        )
+        .count()
+    )
+
+    cancelled_tasks = (
+        db.query(models.Task)
+        .filter(
+            models.Task.status == "cancelled"
+        )
+        .count()
+    )
+
+    overdue_tasks = (
+        db.query(models.Task)
+        .filter(
+            models.Task.due_date.isnot(None),
+            models.Task.due_date < now,
+            models.Task.status.notin_(
+                ["completed", "cancelled"]
+            ),
+        )
+        .count()
+    )
+
+    # -------------------------
+    # Completion percentage
+    # -------------------------
+
+    completion_percentage = 0
+
+    if total_tasks > 0:
+        completion_percentage = round(
+            (
+                completed_tasks /
+                total_tasks
+            ) * 100,
+            1,
+        )
+
+    return {
+        "meetings": {
+            "total": total_meetings,
+            "draft": draft_meetings,
+            "published": published_meetings,
+        },
+
+        "tasks": {
+            "total": total_tasks,
+            "pending": pending_tasks,
+            "in_progress": in_progress_tasks,
+            "completed": completed_tasks,
+            "cancelled": cancelled_tasks,
+            "overdue": overdue_tasks,
+        },
+
+        "completion_percentage":
+            completion_percentage,
+    }
+
+
+@app.get("/manager/analytics/team")
+def get_manager_team_analytics(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    if current_user["role"] != "manager":
+        raise HTTPException(
+            status_code=403,
+            detail="Manager access only",
+        )
+
+    now = datetime.now()
+
+    employees = (
+        db.query(models.User)
+        .filter(models.User.role == "employee")
+        .all()
+    )
+
+    employee_stats = []
+
+    for employee in employees:
+
+        tasks = (
+            db.query(models.Task)
+            .join(models.TaskAssignment)
+            .filter(
+                models.TaskAssignment.user_id == employee.id
+            )
+            .distinct()
+            .all()
+        )
+
+        total = len(tasks)
+
+        pending = sum(
+            1 for task in tasks
+            if task.status == "pending"
+        )
+
+        in_progress = sum(
+            1 for task in tasks
+            if task.status == "in_progress"
+        )
+
+        completed = sum(
+            1 for task in tasks
+            if task.status == "completed"
+        )
+
+        overdue = sum(
+            1 for task in tasks
+            if (
+                task.due_date is not None
+                and task.due_date < now
+                and task.status
+                not in {"completed", "cancelled"}
+            )
+        )
+
+        completion_percentage = 0
+
+        if total > 0:
+            completion_percentage = round(
+                (completed / total) * 100,
+                1,
+            )
+
+        employee_stats.append({
+            "employee_id": employee.id,
+            "email": employee.email,
+            "total_tasks": total,
+            "pending_tasks": pending,
+            "in_progress_tasks": in_progress,
+            "completed_tasks": completed,
+            "overdue_tasks": overdue,
+            "completion_percentage":
+                completion_percentage,
+        })
+
+
+    # -------------------------
+    # Tasks by priority
+    # -------------------------
+
+    high_priority = (
+        db.query(models.Task)
+        .filter(
+            models.Task.priority == "high"
+        )
+        .count()
+    )
+
+    medium_priority = (
+        db.query(models.Task)
+        .filter(
+            models.Task.priority == "medium"
+        )
+        .count()
+    )
+
+    low_priority = (
+        db.query(models.Task)
+        .filter(
+            models.Task.priority == "low"
+        )
+        .count()
+    )
+
+
+    # -------------------------
+    # Most completed tasks
+    # -------------------------
+
+    top_employee = None
+
+    if employee_stats:
+        top_employee = max(
+            employee_stats,
+            key=lambda employee:
+                employee["completed_tasks"],
+        )
+
+    return {
+        "employees": employee_stats,
+
+        "priority_breakdown": {
+            "high": high_priority,
+            "medium": medium_priority,
+            "low": low_priority,
+        },
+
+        "top_employee": top_employee,
+    }
+
+
+@app.get("/employee/analytics")
+def get_employee_analytics(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    # Only employees can access personal analytics.
+    if current_user["role"] != "employee":
+        raise HTTPException(
+            status_code=403,
+            detail="Employee access only",
+        )
+
+    # Find the logged-in employee.
+    employee = (
+        db.query(models.User)
+        .filter(
+            models.User.email ==
+            current_user["email"]
+        )
+        .first()
+    )
+
+    if employee is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Employee account not found",
+        )
+
+    now = datetime.now()
+
+    # Get every task assigned to this employee.
+    assigned_tasks = (
+        db.query(models.Task)
+        .join(models.TaskAssignment)
+        .filter(
+            models.TaskAssignment.user_id ==
+            employee.id
+        )
+        .all()
+    )
+
+    total_tasks = len(assigned_tasks)
+
+    pending_tasks = sum(
+        1
+        for task in assigned_tasks
+        if task.status == "pending"
+    )
+
+    in_progress_tasks = sum(
+        1
+        for task in assigned_tasks
+        if task.status == "in_progress"
+    )
+
+    completed_tasks = sum(
+        1
+        for task in assigned_tasks
+        if task.status == "completed"
+    )
+
+    overdue_tasks = sum(
+        1
+        for task in assigned_tasks
+        if (
+            task.due_date is not None
+            and task.due_date < now
+            and task.status
+            not in {"completed", "cancelled"}
+        )
+    )
+
+    completion_percentage = 0
+
+    if total_tasks > 0:
+        completion_percentage = round(
+            (
+                completed_tasks /
+                total_tasks
+            ) * 100,
+            1,
+        )
+
+    return {
+        "total_tasks": total_tasks,
+        "pending_tasks": pending_tasks,
+        "in_progress_tasks": in_progress_tasks,
+        "completed_tasks": completed_tasks,
+        "overdue_tasks": overdue_tasks,
+        "completion_percentage":
+            completion_percentage,
+    }
 # ---------------------------------------------------------------
 # Employee access to published meeting
 # ---------------------------------------------------------------

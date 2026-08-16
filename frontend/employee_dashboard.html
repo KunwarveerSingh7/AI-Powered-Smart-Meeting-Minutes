@@ -16,12 +16,50 @@
             <h1> Employee Dashboard</h1>
 
             <p id="welcome_message">
-                Welcome
-            </p>
+    Welcome
+</p>
 
-            <hr>
-            <!-- the functionality is definitely basic as it needs the backend development -->
-            <h2>My Tasks</h2>
+<hr>
+
+<h2>My Analytics</h2>
+
+<div id="employeeAnalytics">
+
+    <div>
+        <strong>Total Assigned Tasks:</strong>
+        <span id="employeeTotalTasks">0</span>
+    </div>
+
+    <div>
+        <strong>Pending:</strong>
+        <span id="employeePendingTasks">0</span>
+    </div>
+
+    <div>
+        <strong>In Progress:</strong>
+        <span id="employeeInProgressTasks">0</span>
+    </div>
+
+    <div>
+        <strong>Completed:</strong>
+        <span id="employeeCompletedTasks">0</span>
+    </div>
+
+    <div>
+        <strong>Overdue:</strong>
+        <span id="employeeOverdueTasks">0</span>
+    </div>
+
+    <div>
+        <strong>Completion:</strong>
+        <span id="employeeCompletionPercentage">0%</span>
+    </div>
+
+</div>
+
+<hr>
+
+<h2>My Tasks</h2>
 
 <button type="button" id="refreshTasks">
     Refresh Tasks

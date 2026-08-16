@@ -21,6 +21,8 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     role = Column(String, default="employee")  # manager or employee
+    name = Column(String(100), nullable=True)
+    position = Column(String(100), nullable=True)
 
     uploaded_meetings = relationship(
         "Meeting",

@@ -497,6 +497,77 @@ async function updateTaskProgress(
     }
 }
 
+async function loadEmployeeAnalytics() {
+
+    try {
+
+        const response = await fetch(
+            "/employee/analytics",
+            {
+                headers: {
+                    "Authorization":
+                        "Bearer " + token
+                }
+            }
+        );
+
+        if (!response.ok) {
+
+            console.error(
+                "Could not load employee analytics."
+            );
+
+            return;
+        }
+
+        const data =
+            await response.json();
+
+
+        document.getElementById(
+            "employeeTotalTasks"
+        ).textContent =
+            data.total_tasks;
+
+
+        document.getElementById(
+            "employeePendingTasks"
+        ).textContent =
+            data.pending_tasks;
+
+
+        document.getElementById(
+            "employeeInProgressTasks"
+        ).textContent =
+            data.in_progress_tasks;
+
+
+        document.getElementById(
+            "employeeCompletedTasks"
+        ).textContent =
+            data.completed_tasks;
+
+
+        document.getElementById(
+            "employeeOverdueTasks"
+        ).textContent =
+            data.overdue_tasks;
+
+
+        document.getElementById(
+            "employeeCompletionPercentage"
+        ).textContent =
+            data.completion_percentage + "%";
+
+    } catch (error) {
+
+        console.error(
+            "Employee analytics loading error:",
+            error
+        );
+    }
+}
+
 
 async function loadTaskHistory(
     taskId,
@@ -952,8 +1023,12 @@ showTaskHistory.addEventListener(
 // Load assigned tasks automatically
 // when the employee dashboard opens.
 async function startEmployeeDashboard() {
+
     await checkEmployee();
+
     await loadTasks();
+
+    await loadEmployeeAnalytics();
 }
 
 startEmployeeDashboard();

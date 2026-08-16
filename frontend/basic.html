@@ -12,47 +12,91 @@
 
 </head>
 <body>
+
     <div class="login-page">
+
         <div class="login-card">
 
-            <h2>Smart Meeting Minutes</h2>
+            <img
+                src="/static/images/logo.png"
+                alt="Smart Meeting Minutes logo"
+                class="app-logo"
+            >
+
+
+            
+
+            <h2>
+                Welcome Back
+            </h2>
+
             <p class="sub">
-                Task Tracker Login
+                Sign in to continue to your dashboard
             </p>
 
             <form id="loginForm">
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email"
-                    class="form-control"
-                    id="email"
-                    name="email"
-                    required>
-                </div>
 
                 <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password"
-                    class="form-control"
-                    id="password"
-                    name="password"
-                    required>
+
+                    <label
+                        for="email"
+                        class="form-label"
+                    >
+                        Email
+                    </label>
+
+                    <input
+                        type="email"
+                        class="form-control"
+                        id="email"
+                        name="email"
+                        required
+                    >
+
                 </div>
 
-                <div id="errorMessage" class="error-message">
+                <div class="mb-3">
+
+                    <label
+                        for="password"
+                        class="form-label"
+                    >
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        class="form-control"
+                        id="password"
+                        name="password"
+                        required
+                    >
 
                 </div>
 
-                <button type="submit" class="btn btn-primary">Login</button>
+                <div
+                    id="errorMessage"
+                    class="error-message"
+                >
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary login-button"
+                >
+                    Login
+                </button>
 
             </form>
 
             <p class="login-note">
-                Employees can log in using their company credentials. If you are having trouble logging in, please contact your system administrator.
-
-
+                Employees can log in using their company credentials.
+                If you are having trouble logging in,
+                please contact your system administrator.
             </p>
+
         </div>
+
     </div>
 
     <script src="/static/login.js"></script>

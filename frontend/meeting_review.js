@@ -1,13 +1,51 @@
 const token =
     localStorage.getItem("access_token");
 
+let employeeList = [];
 
+
+// Load employees for task assignment
+async function loadEmployees() {
+
+    try {
+        const response = await fetch(
+            "/employees",
+            {
+                headers: {
+                    "Authorization":
+                        "Bearer " + token
+                }
+            }
+        );
+
+        if (!response.ok) {
+            console.error(
+                "Could not load employees."
+            );
+            return;
+        }
+
+        employeeList =
+            await response.json();
+
+    } catch (error) {
+        console.error(
+            "Employee loading error:",
+            error
+        );
+    }
+}
+
+
+
+// Existing meeting function starts here
 async function loadMeeting() {
 
     if (!token) {
         window.location.href = "/login-page";
         return;
     }
+    
 
     const parts =
         window.location.pathname.split("/");
@@ -54,12 +92,513 @@ async function loadMeeting() {
         ).textContent =
             meeting.raw_text;
 
+            // Display AI summary
+document.getElementById(
+    "aiSummary"
+).value =
+    meeting.ai_summary || "";
+
+// Display decisions
+const decisionsContainer =
+    document.getElementById("decisions");
+
+decisionsContainer.innerHTML = "";
+
+if (
+    meeting.decisions &&
+    meeting.decisions.length > 0
+) {
+    meeting.decisions.forEach(
+        function (decision) {
+
+            const decisionBox =
+                document.createElement("div");
+
+            const input =
+                document.createElement("textarea");
+
+            input.rows = 3;
+            input.style.width = "100%";
+            input.value =
+                decision.decision_text;
+
+            const button =
+                document.createElement("button");
+
+            button.textContent =
+                "Save Decision";
+
+            button.onclick = function () {
+                saveDecision(
+                    decision.id,
+                    input.value
+                );
+            };
+
+            decisionBox.appendChild(input);
+            decisionBox.appendChild(button);
+
+            decisionsContainer.appendChild(
+                decisionBox
+            );
+        }
+    );
+} else {
+    decisionsContainer.textContent =
+        "No decisions identified.";
+}
+
+
+// Display AI-generated tasks
+const tasksContainer =
+    document.getElementById("tasks");
+
+tasksContainer.innerHTML = "";
+
+if (
+    meeting.tasks &&
+    meeting.tasks.length > 0
+) {
+    meeting.tasks.forEach(function (task) {
+
+        const taskBox =
+            document.createElement("div");
+
+        taskBox.className = "task-review";
+
+
+        // -------------------------
+        // Task title
+        // -------------------------
+
+        const titleLabel =
+            document.createElement("p");
+
+        titleLabel.textContent = "Task Title:";
+
+        const titleInput =
+            document.createElement("input");
+
+        titleInput.type = "text";
+        titleInput.value = task.title;
+        titleInput.style.width = "100%";
+
+        taskBox.appendChild(titleLabel);
+        taskBox.appendChild(titleInput);
+
+
+        // -------------------------
+        // Description
+        // -------------------------
+
+        const descriptionLabel =
+            document.createElement("p");
+
+        descriptionLabel.textContent =
+            "Description:";
+
+        const descriptionInput =
+            document.createElement("textarea");
+
+        descriptionInput.rows = 3;
+        descriptionInput.style.width = "100%";
+        descriptionInput.value =
+            task.description || "";
+
+        taskBox.appendChild(
+            descriptionLabel
+        );
+
+        taskBox.appendChild(
+            descriptionInput
+        );
+
+
+        // -------------------------
+        // Deadline
+        // -------------------------
+
+        const deadlineLabel =
+            document.createElement("p");
+
+        deadlineLabel.textContent =
+            "Deadline:";
+
+        const deadlineInput =
+            document.createElement("input");
+
+        deadlineInput.type = "date";
+
+        if (task.due_date) {
+            deadlineInput.value =
+                task.due_date.split("T")[0];
+        }
+
+        taskBox.appendChild(
+            deadlineLabel
+        );
+
+        taskBox.appendChild(
+            deadlineInput
+        );
+
+
+        // -------------------------
+        // Priority
+        // -------------------------
+
+        const priorityLabel =
+            document.createElement("p");
+
+        priorityLabel.textContent =
+            "Priority:";
+
+        const prioritySelect =
+            document.createElement("select");
+
+        ["low", "medium", "high"].forEach(
+            function (priorityValue) {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+                option.value =
+                    priorityValue;
+
+                option.textContent =
+                    priorityValue;
+
+                if (
+                    task.priority ===
+                    priorityValue
+                ) {
+                    option.selected = true;
+                }
+
+                prioritySelect.appendChild(
+                    option
+                );
+            }
+        );
+
+        taskBox.appendChild(
+            priorityLabel
+        );
+
+        taskBox.appendChild(
+            prioritySelect
+        );
+
+
+        // -------------------------
+        // Employee assignment
+        // -------------------------
+
+        const employeeLabel =
+            document.createElement("p");
+
+        employeeLabel.textContent =
+            "Assign Employee:";
+
+        const employeeSelect =
+            document.createElement("select");
+
+        employeeSelect.multiple = true;
+
+        employeeList.forEach(
+            function (employee) {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+                option.value =
+                    employee.id;
+
+                option.textContent =
+                    employee.email;
+
+                if (
+                    task.assigned_user_ids &&
+                    task.assigned_user_ids.includes(
+                        employee.id
+                    )
+                ) {
+                    option.selected = true;
+                }
+
+                employeeSelect.appendChild(
+                    option
+                );
+            }
+        );
+
+        taskBox.appendChild(
+            employeeLabel
+        );
+
+        taskBox.appendChild(
+            employeeSelect
+        );
+
+
+        // -------------------------
+        // Warning
+        // -------------------------
+
+        if (!task.due_date) {
+
+            const warning =
+                document.createElement("p");
+
+            warning.textContent =
+                "⚠️ Manager review required: deadline is missing.";
+
+            taskBox.appendChild(
+                warning
+            );
+        }
+
+
+        // -------------------------
+        // Save button
+        // -------------------------
+
+        const saveButton =
+            document.createElement("button");
+
+        saveButton.textContent =
+            "Save Task";
+
+        const message =
+            document.createElement("p");
+
+        saveButton.onclick =
+            async function () {
+
+                const assignedIds =
+                    Array.from(
+                        employeeSelect
+                            .selectedOptions
+                    ).map(
+                        option =>
+                            Number(option.value)
+                    );
+
+                await saveTask(
+                    task.id,
+                    {
+                        title:
+                            titleInput.value,
+
+                        description:
+                            descriptionInput.value,
+
+                        due_date:
+                            deadlineInput.value
+                                ? deadlineInput.value +
+                                  "T00:00:00"
+                                : null,
+
+                        priority:
+                            prioritySelect.value,
+
+                        assigned_user_ids:
+                            assignedIds
+                    },
+                    message
+                );
+            };
+
+        taskBox.appendChild(
+            saveButton
+        );
+
+        taskBox.appendChild(
+            message
+        );
+
+        taskBox.appendChild(
+            document.createElement("hr")
+        );
+
+        tasksContainer.appendChild(
+            taskBox
+        );
+    });
+
+} else {
+
+    tasksContainer.textContent =
+        "No tasks identified.";
+}
+
     } catch (error) {
 
         console.error(
             "Meeting review error:",
             error
         );
+    }
+}
+
+async function saveSummary() {
+
+    const parts =
+        window.location.pathname.split("/");
+
+    const meetingId =
+        parts[parts.length - 1];
+
+    const summary =
+        document.getElementById(
+            "aiSummary"
+        ).value;
+
+    try {
+        const response = await fetch(
+            "/meetings/" +
+            meetingId +
+            "/summary",
+            {
+                method: "PUT",
+
+                headers: {
+                    "Authorization":
+                        "Bearer " + token,
+
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    ai_summary: summary
+                })
+            }
+        );
+
+        if (!response.ok) {
+            document.getElementById(
+                "summaryMessage"
+            ).textContent =
+                "Could not save summary.";
+            return;
+        }
+
+        document.getElementById(
+            "summaryMessage"
+        ).textContent =
+            "Summary saved successfully.";
+
+    } catch (error) {
+        console.error(
+            "Summary update error:",
+            error
+        );
+    }
+}
+
+
+async function saveDecision(
+    decisionId,
+    decisionText
+) {
+
+    try {
+        const response = await fetch(
+            "/decisions/" + decisionId,
+            {
+                method: "PUT",
+
+                headers: {
+                    "Authorization":
+                        "Bearer " + token,
+
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    decision_text:
+                        decisionText
+                })
+            }
+        );
+
+        if (!response.ok) {
+            document.getElementById(
+                "decisionMessage"
+            ).textContent =
+                "Could not save decision.";
+            return;
+        }
+
+        document.getElementById(
+            "decisionMessage"
+        ).textContent =
+            "Decision saved successfully.";
+
+    } catch (error) {
+        console.error(
+            "Decision update error:",
+            error
+        );
+    }
+}
+
+
+async function saveTask(
+    taskId,
+    taskData,
+    messageElement
+) {
+
+    try {
+        const response = await fetch(
+            "/tasks/" + taskId,
+            {
+                method: "PUT",
+
+                headers: {
+                    "Authorization":
+                        "Bearer " + token,
+
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify(
+                    taskData
+                )
+            }
+        );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+            messageElement.textContent =
+                data.detail ||
+                "Could not save task.";
+
+            return;
+        }
+
+        messageElement.textContent =
+            "Task saved successfully.";
+
+    } catch (error) {
+
+        console.error(
+            "Task update error:",
+            error
+        );
+
+        messageElement.textContent =
+            "Unable to save task.";
     }
 }
 
@@ -70,4 +609,10 @@ function goBack() {
 }
 
 
-loadMeeting();
+async function startReviewPage() {
+    await loadEmployees();
+    await loadMeeting();
+}
+
+
+startReviewPage();

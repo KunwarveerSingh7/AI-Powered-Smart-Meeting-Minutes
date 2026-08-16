@@ -470,14 +470,138 @@ def get_meeting(
         )
  
     return {
-        "id": meeting.id,
-        "title": meeting.title,
-        "meeting_date": meeting.meeting_date,
-        "original_filename":
-            meeting.original_filename,
-        "file_type": meeting.file_type,
-        "raw_text": meeting.raw_text,
-        "status": meeting.status
+    "id": meeting.id,
+    "title": meeting.title,
+    "meeting_date": meeting.meeting_date,
+    "original_filename": meeting.original_filename,
+    "file_type": meeting.file_type,
+    "raw_text": meeting.raw_text,
+
+    # AI-generated summary saved during Stage 4.5
+    "ai_summary": meeting.ai_summary,
+
+    "status": meeting.status,
+
+    # Send all decisions belonging to this meeting
+    "decisions": [
+        {
+            "id": decision.id,
+            "decision_text": decision.decision_text
+        }
+        for decision in meeting.decisions
+    ],
+
+    # Send all AI-generated tasks connected to this meeting
+    "tasks": [
+        {
+            "id": task.id,
+            "title": task.title,
+            "description": task.description,
+            "due_date": task.due_date,
+            "priority": task.priority,
+            "status": task.status,
+
+            # This will normally be empty at this stage because
+            # the manager has not confirmed employee assignments yet.
+            "assigned_user_ids": [
+                assignment.user_id
+                for assignment in task.assignments
+            ]
+        }
+        for task in meeting.tasks
+    ]
+}
+
+@app.put("/meetings/{meeting_id}/summary")
+def update_meeting_summary(
+    meeting_id: int,
+    summary_update: schemas.MeetingSummaryUpdate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    # Only managers can edit the AI-generated meeting summary.
+    if current_user["role"] != "manager":
+        raise HTTPException(
+            status_code=403,
+            detail="Only managers can edit meeting summaries"
+        )
+
+    meeting = (
+        db.query(models.Meeting)
+        .filter(models.Meeting.id == meeting_id)
+        .first()
+    )
+
+    if meeting is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Meeting not found"
+        )
+
+    meeting.ai_summary = summary_update.ai_summary
+
+    try:
+        db.commit()
+        db.refresh(meeting)
+
+    except Exception as error:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=500,
+            detail="Meeting summary could not be updated"
+        ) from error
+
+    return {
+        "message": "Meeting summary updated",
+        "ai_summary": meeting.ai_summary
+    }
+
+
+@app.put("/decisions/{decision_id}")
+def update_decision(
+    decision_id: int,
+    decision_update: schemas.DecisionUpdate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    # Only managers can edit decisions extracted by the AI.
+    if current_user["role"] != "manager":
+        raise HTTPException(
+            status_code=403,
+            detail="Only managers can edit decisions"
+        )
+
+    decision = (
+        db.query(models.Decision)
+        .filter(models.Decision.id == decision_id)
+        .first()
+    )
+
+    if decision is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Decision not found"
+        )
+
+    decision.decision_text = decision_update.decision_text
+
+    try:
+        db.commit()
+        db.refresh(decision)
+
+    except Exception as error:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=500,
+            detail="Decision could not be updated"
+        ) from error
+
+    return {
+        "message": "Decision updated",
+        "id": decision.id,
+        "decision_text": decision.decision_text
     }
  
  
@@ -580,9 +704,18 @@ def analyse_meeting_route(
         models.Decision.meeting_id == meeting.id
     ).delete()
 
-    db.query(models.Task).filter(
-        models.Task.meeting_id == meeting.id
-    ).delete()
+    # Get previous tasks for this meeting.
+    # Delete them through SQLAlchemy instead of using bulk delete.
+    # This allows the Task model's cascade relationships to remove
+    # task assignments and task updates safely first.
+    existing_tasks = (
+    db.query(models.Task)
+    .filter(models.Task.meeting_id == meeting.id)
+    .all()
+    )
+
+    for existing_task in existing_tasks:
+        db.delete(existing_task)
 
 
     # ---------------------------------------------------------------

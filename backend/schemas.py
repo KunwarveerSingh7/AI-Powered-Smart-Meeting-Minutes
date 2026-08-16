@@ -51,6 +51,19 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
+    # ---------------------------------------------------------------------------
+# Meeting review
+# ---------------------------------------------------------------------------
+
+class MeetingSummaryUpdate(BaseModel):
+    # Allows a manager to edit the AI-generated meeting summary.
+    ai_summary: str
+
+
+class DecisionUpdate(BaseModel):
+    # Allows a manager to edit an AI-extracted decision.
+    decision_text: str
+
 
 # ---------------------------------------------------------------------------
 # Tasks

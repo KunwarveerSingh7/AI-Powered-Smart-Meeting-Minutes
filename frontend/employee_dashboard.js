@@ -29,7 +29,12 @@ async function checkEmployee() {
         }
 
         document.getElementById("welcome_message").textContent =
-            "Logged in as: " + user.email;
+    "Welcome " +
+    (user.name || user.email) +
+    " — " +
+    (user.position || "Employee") +
+    " — " +
+    user.email;
 
     } catch (error) {
         localStorage.removeItem("access_token");

@@ -18,10 +18,29 @@ async function checkManager() {
         });
 
         if (!response.ok) {
-            localStorage.removeItem("access_token");
-            window.location.href = "/login-page";
-            return;
-        }
+
+    if (Array.isArray(data.detail)) {
+
+        employeeMessage.textContent =
+            data.detail
+                .map(function (error) {
+                    return (
+                        error.loc.join(" → ") +
+                        ": " +
+                        error.msg
+                    );
+                })
+                .join(" | ");
+
+    } else {
+
+        employeeMessage.textContent =
+            data.detail ||
+            "Could not create employee.";
+    }
+
+    return;
+}
 
         const user = await response.json();
 
@@ -76,8 +95,17 @@ employeeForm.addEventListener("submit", async function (event) {
     employeeMessage.textContent = "";
 
     // Get the values entered by the manager.
-    const email = document.getElementById("employeeEmail").value;
-    const password = document.getElementById("employeePassword").value;
+   const name =
+    document.getElementById("employeeName").value;
+
+const email =
+    document.getElementById("employeeEmail").value;
+
+const password =
+    document.getElementById("employeePassword").value;
+
+const position =
+    document.getElementById("employeePosition").value;
 
     try {
         // new employee details sent to backend
@@ -90,9 +118,11 @@ employeeForm.addEventListener("submit", async function (event) {
                 "Authorization": "Bearer " + token
             },
             body: JSON.stringify({
-                email: email,
-                password: password
-            })
+            name: name,
+            email: email,
+            password: password,
+            position: position
+})
         });
 
         const data = await response.json();
@@ -157,13 +187,19 @@ async function loadEmployees() {
         // Create one paragraph for each employee.
         // This is simple for now and can be replaced by a proper table later.
         employees.forEach(function (employee) {
-            const item = document.createElement("p");
 
-            item.textContent =
-                employee.email + " - " + employee.role;
+    const item =
+        document.createElement("p");
 
-            employeeList.appendChild(item);
-        });
+    item.textContent =
+        (employee.name || "No name") +
+        " — " +
+        (employee.position || "No position") +
+        " — " +
+        employee.email;
+
+    employeeList.appendChild(item);
+});
 
     } catch (error) {
         console.error("Employee list error:", error);

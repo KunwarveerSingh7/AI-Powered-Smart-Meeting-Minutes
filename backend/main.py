@@ -153,9 +153,30 @@ def login(
  
 @app.get("/me")
 def read_current_user(
+    db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 ):
-    return current_user
+    user = (
+        db.query(models.User)
+        .filter(
+            models.User.email == current_user["email"]
+        )
+        .first()
+    )
+
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    return {
+        "id": user.id,
+        "email": user.email,
+        "role": user.role,
+        "name": user.name,
+        "position": user.position,
+    }
  
 # Create Employee
 @app.post("/employees", response_model=schemas.UserOut)
@@ -186,10 +207,12 @@ def create_employee(
  
     # Create the employee account.
     new_employee = models.User(
-        email=employee.email,
-        hashed_password=hash_password(employee.password),
-        role="employee"
-    )
+    email=employee.email,
+    hashed_password=hash_password(employee.password),
+    role="employee",
+    name=employee.name,
+    position=employee.position
+)
  
     # Save the employee to the database.
     db.add(new_employee)

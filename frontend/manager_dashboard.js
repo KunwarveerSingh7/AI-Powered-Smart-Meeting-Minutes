@@ -79,11 +79,33 @@ const refreshMeetings =
 const meetingHistory =
     document.getElementById("meetingHistory");
 
+    const showTeamAnalytics =
+    document.getElementById("showTeamAnalytics");
+
+const teamAnalyticsContainer =
+    document.getElementById(
+        "teamAnalyticsContainer"
+    );
+
 
 // This button just shows the employee creation form.
 // this form would be hidden. only shown once clicked. to keep manager dashboard cleaner
 showEmployeeForm.addEventListener("click", function () {
-    employeeFormContainer.style.display = "block";
+
+    if (employeeFormContainer.style.display === "none") {
+
+        employeeFormContainer.style.display = "block";
+
+        showEmployeeForm.textContent =
+            "Hide Add Employee";
+
+    } else {
+
+        employeeFormContainer.style.display = "none";
+
+        showEmployeeForm.textContent =
+            "Add New Employee";
+    }
 });
 
 
@@ -637,9 +659,34 @@ async function loadManagerMeetings() {
 
 // Lets the manager manually refresh the employee list.
 refreshEmployees.addEventListener("click", function () {
-    loadEmployees();
-});
 
+    const employeeListContainer =
+        document.getElementById(
+            "employeeListContainer"
+        );
+
+    if (
+        employeeListContainer.style.display ===
+        "none"
+    ) {
+
+        employeeListContainer.style.display =
+            "block";
+
+        refreshEmployees.textContent =
+            "Hide Employee List";
+
+        loadEmployees();
+
+    } else {
+
+        employeeListContainer.style.display =
+            "none";
+
+        refreshEmployees.textContent =
+            "Employee List";
+    }
+});
 
 // Load employees automatically when the dashboard opens.
 loadEmployees();
@@ -657,13 +704,63 @@ const meetingUploadMessage = document.getElementById("meetingUploadMessage");
 
 // upload form is hidden. only shown on click of upload button.
 // When manager clicks the upload button, the form becomes visible.
-showMeetingForm.addEventListener("click", function () {
-    meetingFormContainer.style.display = "block";
-});
+showMeetingForm.addEventListener(
+    "click",
+    function () {
+
+        if (
+            meetingFormContainer.style.display ===
+            "none"
+        ) {
+
+            meetingFormContainer.style.display =
+                "block";
+
+            showMeetingForm.textContent =
+                "Hide Upload Form";
+
+        } else {
+
+            meetingFormContainer.style.display =
+                "none";
+
+            showMeetingForm.textContent =
+                "Upload Meeting Minutes";
+        }
+    }
+);
 
 refreshMeetings.addEventListener(
     "click",
     loadManagerMeetings
+);
+
+showTeamAnalytics.addEventListener(
+    "click",
+    function () {
+
+        if (
+            teamAnalyticsContainer.style.display ===
+            "none"
+        ) {
+
+            teamAnalyticsContainer.style.display =
+                "block";
+
+            showTeamAnalytics.textContent =
+                "Hide Team Analytics";
+
+            loadTeamAnalytics();
+
+        } else {
+
+            teamAnalyticsContainer.style.display =
+                "none";
+
+            showTeamAnalytics.textContent =
+                "Show Team Analytics";
+        }
+    }
 );
 
 // Runs when manager submits the meeting minutes form

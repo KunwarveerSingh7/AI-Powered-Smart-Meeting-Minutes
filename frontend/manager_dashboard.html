@@ -6,230 +6,649 @@
     <meta name="viewport" content="width=device-width, intial-scale=1.0">
 
     <title> Manager Dashboard</title>
+
+    <link rel="stylesheet"
+    href="/static/style.css">
+
   </head>
   <body>
-    <div class="dashboard">
-      <h1>Manager Dashboard</h1>
+    <div class="dashboard-page">
 
-      <!-- TODO: The welcome message should be like Welcome 'employee name' -->
-      <p id="welcome_message">
-        Welcome
-      </p>
+        <!-- _______________________________________________________________
+         Header Section with logo and logout button
+         _______________________________________________________________ -->
 
-      <hr>
+         <header class="dashboard-header">
 
-      <!-- Option to add the meeting minutes -->
-      <h2>Team Manageer</h2>
+            <div class="dashboard-brand">
 
-      <button type="button" id="showEmployeeForm">
-        Add new employee </button>
-
-      <div id="employeeFormContainer" style="display: none;">
-          <h3>Add Employee</h3>
-      <form id="employeeForm">
-
-    <div>
-        <label for="employeeName">Name</label>
-        <input type="text" id="employeeName" required>
-    </div>
-
-    <br>
-
-    <div>
-        <label for="employeeEmail">Email</label>
-        <input type="email" id="employeeEmail" required>
-    </div>
-
-    <br>
-
-    <div>
-        <label for="employeePassword">Temporary Password</label>
-        <input type="password" id="employeePassword" required>
-    </div>
-
-    <br>
-
-    <div>
-        <label for="employeePosition">Position</label>
-        <input type="text" id="employeePosition" required>
-    </div>
-
-    <br>
-
-    <button type="submit">
-        Add Employee
-    </button>
-
-</form>
-
-          <p id="employeeMessage"></p>
-      </div>
-
-    <hr>
-
-        <h2>Employee List</h2>
-
-        <button type="button" id="refreshEmployees">
-
-          Show Employee List </button>
-
-          <div id="employeeList">
-            No employees found.
-          </div>
-
-
-         <hr>
-         
-         <h2>Meeting Minutes</h2>
-
-<!-- Button used to open the meeting upload form -->
-<button type="button" id="showMeetingForm">
-    Upload Meeting Minutes
-</button>
-
-<!-- Hidden until the manager clicks Upload Meeting Minutes -->
-<div id="meetingFormContainer" style="display: none;">
-
-    <h3>Upload Meeting</h3>
-
-    <form id="meetingUploadForm">
-
-        <!-- Manager enters a name/title for the meeting -->
-        <div>
-            <label for="meetingTitle">Meeting Title</label>
-            <input type="text" id="meetingTitle" required>
-        </div>
-
-        <br>
-
-        <!-- Date when the meeting took place -->
-        <div>
-            <label for="meetingDate">Meeting Date</label>
-            <input type="date" id="meetingDate" required>
-        </div>
-
-        <br>
-
-        <!-- Manager selects the actual meeting minutes document -->
-        <div>
-            <label for="meetingFile">Meeting File</label>
-            <input
-                type="file"
-                id="meetingFile"
-                accept=".pdf,.docx,.txt"
-                required
+            <img
+                src="/static/images/logo.png"
+                alt="Smart Meeting Minutes logo"
+                class="app-logo"
             >
-        </div>
 
-        <br>
+            <div>
 
-        <button type="submit">
-            Upload Meeting
-        </button>
+            <h1>
+                Manager Portal
+            </h1>
 
-    </form>
+            </div>
 
-    <!-- Success/error messages from JavaScript appear here -->
-    <p id="meetingUploadMessage"></p>
+            </div>
 
-</div>
+            <button type="button"
+             class="logout-button"
+              onclick="logout()">
+                Logout
+            </button>
 
-<hr>
-
-<h2>Meeting History</h2>
-
-<button type="button" id="refreshMeetings">
-    Show Meeting History
-</button>
-
-<div id="meetingHistory">
-    No meetings loaded.
-</div>
+        </header>
 
 
-      <hr>
+     <!-- MANAGER INFORMATION
+        ====================================================== -->
 
-<h2>Analytics</h2>
+        <main class="dashboard-content">
 
-<div id="managerAnalytics">
+            <section class="welcome-section">
 
-    <div>
-        <strong>Total Meetings:</strong>
-        <span id="totalMeetings">0</span>
+            
+
+                <p id="welcome_message">
+                    Logged in as:
+                </p>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 TEAM MANAGEMENT
+            ================================================== -->
+
+            <section class="dashboard-section">
+
+                <div class="section-heading">
+
+                    <div>
+                        <h2>
+                            Team Management
+                        </h2>
+
+                        <p>
+                            Create and manage employee accounts.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="section-actions">
+
+                    <button
+                        type="button"
+                        id="showEmployeeForm"
+                        class="primary-action"
+                    >
+                        Add New Employee
+                    </button>
+
+
+                    <button
+                        type="button"
+                        id="refreshEmployees"
+                        class="secondary-action"
+                    >
+                        Employee List
+                    </button>
+
+                </div>
+
+
+
+                <!-- Employee creation form -->
+
+                <div
+                    id="employeeFormContainer"
+                    class="dropdown-panel"
+                    style="display: none;"
+                >
+
+                    <h3>
+                        Add Employee
+                    </h3>
+
+
+                    <form id="employeeForm">
+
+                        <div class="form-group">
+
+                            <label for="employeeName">
+                                Name
+                            </label>
+
+                            <input
+                                type="text"
+                                id="employeeName"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="employeeEmail">
+                                Email
+                            </label>
+
+                            <input
+                                type="email"
+                                id="employeeEmail"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="employeePassword">
+                                Temporary Password
+                            </label>
+
+                            <input
+                                type="password"
+                                id="employeePassword"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="employeePosition">
+                                Position
+                            </label>
+
+                            <input
+                                type="text"
+                                id="employeePosition"
+                                required
+                            >
+
+                        </div>
+
+
+                        <button
+                            type="submit"
+                            class="primary-action"
+                        >
+                            Add Employee
+                        </button>
+
+                    </form>
+
+
+                    <p id="employeeMessage"></p>
+
+                </div>
+
+
+
+                <!-- Employee list -->
+
+                <div
+                    id="employeeListContainer"
+                    class="dropdown-panel"
+                    style="display: none;"
+                >
+
+                    <h3>
+                        Employees
+                    </h3>
+
+                    <div id="employeeList">
+                        No employees found.
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 MEETING MINUTES
+            ================================================== -->
+
+            <section class="dashboard-section">
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <h2>
+                            Meeting Minutes
+                        </h2>
+
+                        <p>
+                            Upload meeting files for AI processing.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    id="showMeetingForm"
+                    class="primary-action"
+                >
+                    Upload Meeting Minutes
+                </button>
+
+
+
+                <!-- Meeting upload form -->
+
+                <div
+                    id="meetingFormContainer"
+                    class="dropdown-panel"
+                    style="display: none;"
+                >
+
+                    <h3>
+                        Upload Meeting
+                    </h3>
+
+
+                    <form id="meetingUploadForm">
+
+
+                        <div class="form-group">
+
+                            <label for="meetingTitle">
+                                Meeting Title
+                            </label>
+
+                            <input
+                                type="text"
+                                id="meetingTitle"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="meetingDate">
+                                Meeting Date
+                            </label>
+
+                            <input
+                                type="date"
+                                id="meetingDate"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="meetingFile">
+                                Meeting File
+                            </label>
+
+                            <input
+                                type="file"
+                                id="meetingFile"
+                                accept=".pdf,.docx,.txt"
+                                required
+                            >
+
+                        </div>
+
+
+                        <button
+                            type="submit"
+                            class="primary-action"
+                        >
+                            Upload Meeting
+                        </button>
+
+                    </form>
+
+
+                    <p id="meetingUploadMessage"></p>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 MEETING HISTORY
+            ================================================== -->
+
+            <section class="dashboard-section">
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <h2>
+                            Meeting History
+                        </h2>
+
+                        <p>
+                            Review previously uploaded meetings.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        id="refreshMeetings"
+                        class="secondary-action"
+                    >
+                        Refresh Meetings
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="meetingHistory"
+                    class="meeting-history-grid"
+                >
+                    No meetings loaded.
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 ANALYTICS
+            ================================================== -->
+
+            <section class="dashboard-section">
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <h2>
+                            Analytics
+                        </h2>
+
+                        <p>
+                            Overall meeting and task statistics.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="managerAnalytics"
+                    class="analytics-grid"
+                >
+
+
+                    <div class="analytics-card">
+
+                        <span id="totalMeetings">
+                            0
+                        </span>
+
+                        <strong>
+                            Total Meetings
+                        </strong>
+
+                    </div>
+
+
+                    <div class="analytics-card">
+
+                        <span id="draftMeetings">
+                            0
+                        </span>
+
+                        <strong>
+                            Draft Meetings
+                        </strong>
+
+                    </div>
+
+
+                    <div class="analytics-card">
+
+                        <span id="publishedMeetings">
+                            0
+                        </span>
+
+                        <strong>
+                            Published Meetings
+                        </strong>
+
+                    </div>
+
+
+                    <div class="analytics-card">
+
+                        <span id="totalTasks">
+                            0
+                        </span>
+
+                        <strong>
+                            Total Tasks
+                        </strong>
+
+                    </div>
+
+
+                    <div class="analytics-card">
+
+                        <span id="pendingTasks">
+                            0
+                        </span>
+
+                        <strong>
+                            Pending
+                        </strong>
+
+                    </div>
+
+
+                    <div class="analytics-card">
+
+                        <span id="inProgressTasks">
+                            0
+                        </span>
+
+                        <strong>
+                            In Progress
+                        </strong>
+
+                    </div>
+
+
+                    <div class="analytics-card">
+
+                        <span id="completedTasks">
+                            0
+                        </span>
+
+                        <strong>
+                            Completed
+                        </strong>
+
+                    </div>
+
+
+                    <div class="analytics-card">
+
+                        <span id="overdueTasks">
+                            0
+                        </span>
+
+                        <strong>
+                            Overdue
+                        </strong>
+
+                    </div>
+
+
+                    <div class="analytics-card">
+
+                        <span id="completionPercentage">
+                            0%
+                        </span>
+
+                        <strong>
+                            Completion
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Chart area for later 7.2D -->
+
+                <div
+                    id="managerChartArea"
+                    class="chart-area"
+                >
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 TEAM ANALYTICS
+            ================================================== -->
+
+            <section class="dashboard-section">
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <h2>
+                            Team Analytics
+                        </h2>
+
+                        <p>
+                            Review individual employee performance.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        id="showTeamAnalytics"
+                        class="secondary-action"
+                    >
+                        Show Team Analytics
+                    </button>
+
+                </div>
+
+
+
+                <div
+                    id="teamAnalyticsContainer"
+                    class="dropdown-panel"
+                    style="display: none;"
+                >
+
+
+                    <div id="teamAnalytics">
+                        Loading team analytics...
+                    </div>
+
+
+
+                    <div class="team-extra-grid">
+
+
+                        <div class="analytics-detail-card">
+
+                            <h3>
+                                Priority Breakdown
+                            </h3>
+
+                            <div id="priorityBreakdown">
+                            </div>
+
+                            <div
+                                id="priorityChart"
+                                class="priority-chart"
+                            >
+                            </div>
+
+                        </div>
+
+
+
+                        <div class="analytics-detail-card">
+
+                            <h3>
+                                Top Performing Employee
+                            </h3>
+
+                            <div id="topEmployee">
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 BOTTOM LOGOUT
+            ================================================== -->
+
+            <section class="dashboard-footer">
+
+                <button
+                    type="button"
+                    class="logout-button"
+                    onclick="logout()"
+                >
+                    Logout
+                </button>
+
+            </section>
+
+
+        </main>
+
     </div>
 
-    <div>
-        <strong>Draft Meetings:</strong>
-        <span id="draftMeetings">0</span>
-    </div>
 
-    <div>
-        <strong>Published Meetings:</strong>
-        <span id="publishedMeetings">0</span>
-    </div>
+    <script src="/static/manager_dashboard.js"></script>
 
-    <div>
-        <strong>Total Tasks:</strong>
-        <span id="totalTasks">0</span>
-    </div>
+</body>
 
-    <div>
-        <strong>Pending:</strong>
-        <span id="pendingTasks">0</span>
-    </div>
-
-    <div>
-        <strong>In Progress:</strong>
-        <span id="inProgressTasks">0</span>
-    </div>
-
-    <div>
-        <strong>Completed:</strong>
-        <span id="completedTasks">0</span>
-    </div>
-
-    <div>
-        <strong>Overdue:</strong>
-        <span id="overdueTasks">0</span>
-    </div>
-
-    <div>
-        <strong>Completion:</strong>
-        <span id="completionPercentage">0%</span>
-    </div>
-
-</div>
-
-<hr>
-
-<h2>Team Analytics</h2>
-
-<div id="teamAnalytics">
-    Loading team analytics...
-</div>
-
-<h3>Priority Breakdown</h3>
-
-<div id="priorityBreakdown">
-</div>
-
-<h3>Top Employee</h3>
-
-<div id="topEmployee">
-</div>
-
-      <br><br>
-
-      <button onclick="logout()">
-            Logout
-      </button>
-
-    </div>
-
-    <script src ="/static/manager_dashboard.js"></script>
-
-
-
-
-  </body>
 </html>

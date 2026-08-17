@@ -166,6 +166,41 @@ if (
 
         taskBox.className = "task-review";
 
+        const taskHeader =
+    document.createElement("div");
+
+taskHeader.className =
+    "task-review-header";
+
+
+const taskNumber =
+    document.createElement("span");
+
+taskNumber.className =
+    "task-number";
+
+taskNumber.textContent =
+    "AI-Generated Task";
+
+
+const priorityBadge =
+    document.createElement("span");
+
+priorityBadge.className =
+    "priority-badge priority-" +
+    task.priority;
+
+priorityBadge.textContent =
+    (task.priority || "medium")
+        .toUpperCase() +
+    " PRIORITY";
+
+
+taskHeader.appendChild(taskNumber);
+taskHeader.appendChild(priorityBadge);
+
+taskBox.appendChild(taskHeader);
+
 
         // -------------------------
         // Task title
@@ -174,10 +209,16 @@ if (
         const titleLabel =
             document.createElement("p");
 
+            titleLabel.className =
+    "task-field-label";
+
         titleLabel.textContent = "Task Title:";
 
         const titleInput =
             document.createElement("input");
+
+            titleInput.className =
+    "task-input";
 
         titleInput.type = "text";
         titleInput.value = task.title;
@@ -194,11 +235,18 @@ if (
         const descriptionLabel =
             document.createElement("p");
 
+        descriptionLabel.className =
+            "task-field-label";
+
         descriptionLabel.textContent =
             "Description:";
 
+
         const descriptionInput =
             document.createElement("textarea");
+
+        descriptionInput.className =
+            "task-input";
 
         descriptionInput.rows = 3;
         descriptionInput.style.width = "100%";
@@ -221,11 +269,18 @@ if (
         const deadlineLabel =
             document.createElement("p");
 
+        deadlineLabel.className =
+            "task-field-label";
+
         deadlineLabel.textContent =
             "Deadline:";
 
+
         const deadlineInput =
             document.createElement("input");
+
+        deadlineInput.className =
+            "task-input";
 
         deadlineInput.type = "date";
 
@@ -233,14 +288,6 @@ if (
             deadlineInput.value =
                 task.due_date.split("T")[0];
         }
-
-        taskBox.appendChild(
-            deadlineLabel
-        );
-
-        taskBox.appendChild(
-            deadlineInput
-        );
 
 
         // -------------------------
@@ -250,11 +297,18 @@ if (
         const priorityLabel =
             document.createElement("p");
 
+        priorityLabel.className =
+            "task-field-label";
+
         priorityLabel.textContent =
             "Priority:";
 
+
         const prioritySelect =
             document.createElement("select");
+
+        prioritySelect.className =
+            "task-input";
 
         ["low", "medium", "high"].forEach(
             function (priorityValue) {
@@ -283,14 +337,54 @@ if (
             }
         );
 
-        taskBox.appendChild(
-            priorityLabel
-        );
+        const taskDetailsRow =
+    document.createElement("div");
 
-        taskBox.appendChild(
-            prioritySelect
-        );
+taskDetailsRow.className =
+    "task-details-row";
 
+
+const deadlineGroup =
+    document.createElement("div");
+
+deadlineGroup.className =
+    "task-field-group";
+
+deadlineGroup.appendChild(
+    deadlineLabel
+);
+
+deadlineGroup.appendChild(
+    deadlineInput
+);
+
+
+const priorityGroup =
+    document.createElement("div");
+
+priorityGroup.className =
+    "task-field-group";
+
+priorityGroup.appendChild(
+    priorityLabel
+);
+
+priorityGroup.appendChild(
+    prioritySelect
+);
+
+
+taskDetailsRow.appendChild(
+    deadlineGroup
+);
+
+taskDetailsRow.appendChild(
+    priorityGroup
+);
+
+taskBox.appendChild(
+    taskDetailsRow
+);
 
         // -------------------------
         // Employee assignment
@@ -299,11 +393,18 @@ if (
         const employeeLabel =
             document.createElement("p");
 
+        employeeLabel.className =
+            "task-field-label";
+
         employeeLabel.textContent =
             "Assign Employee:";
 
+
         const employeeSelect =
             document.createElement("select");
+
+        employeeSelect.className =
+            "task-input employee-assignment";
 
         employeeSelect.multiple = true;
 
@@ -319,7 +420,12 @@ if (
                     employee.id;
 
                 option.textContent =
-                    employee.email;
+                (employee.name || employee.email) +
+                (
+                    employee.position
+                    ? " — " + employee.position
+                    : ""
+                    );
 
                 if (
                     task.assigned_user_ids &&
@@ -357,9 +463,30 @@ if (
             warning.textContent =
                 "⚠️ Manager review required: deadline is missing.";
 
+                warning.className = "manager-review-warning";
+
             taskBox.appendChild(
                 warning
             );
+        }
+
+
+        if (!task.assigned_user_ids ||
+            task.assigned_user_ids.length === 0
+        ) {
+
+        const assignmentWarning =
+            document.createElement("p");
+
+        assignmentWarning.className =
+            "manager-review-warning";
+
+        assignmentWarning.textContent =
+            "⚠️ Manager review required: employee assignment has not been confirmed.";
+
+        taskBox.appendChild(
+            assignmentWarning
+        );
         }
 
 
@@ -373,8 +500,14 @@ if (
         saveButton.textContent =
             "Save Task";
 
+        saveButton.className =
+            "primary-action task-save-button";    
+
         const message =
             document.createElement("p");
+
+        message.className =
+            "task-save-message";    
 
         saveButton.onclick =
             async function () {
@@ -421,9 +554,6 @@ if (
             message
         );
 
-        taskBox.appendChild(
-            document.createElement("hr")
-        );
 
         tasksContainer.appendChild(
             taskBox

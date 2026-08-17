@@ -1,3 +1,7 @@
+# TODO: Decide final account registration method.
+# Option 1: Only managers can create employee accounts.
+# Option 2: Allow employees to sign up for their own accounts.
+
 from pathlib import Path
 from typing import List
  
@@ -1004,6 +1008,8 @@ def get_manager_team_analytics(
         employee_stats.append({
             "employee_id": employee.id,
             "email": employee.email,
+            "name" : employee.name,
+            "position" : employee.position,
             "total_tasks": total,
             "pending_tasks": pending,
             "in_progress_tasks": in_progress,

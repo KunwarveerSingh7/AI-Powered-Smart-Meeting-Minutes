@@ -276,9 +276,315 @@ async function loadManagerAnalytics() {
         document.getElementById("completionPercentage").textContent =
             data.completion_percentage + "%";
 
+            renderManagerCharts(data);
+
     } catch (error) {
         console.error("Analytics loading error:", error);
     }
+}
+
+
+function renderManagerCharts(data) {
+
+    const chartArea =
+        document.getElementById(
+            "managerChartArea"
+        );
+
+    chartArea.innerHTML = "";
+
+
+    // -----------------------------------------
+    // TASK STATUS DONUT
+    // -----------------------------------------
+
+    const taskChartCard =
+        document.createElement("div");
+
+    taskChartCard.className =
+        "chart-card";
+
+
+    const taskChartTitle =
+        document.createElement("h3");
+
+    taskChartTitle.textContent =
+        "Task Status Overview";
+
+
+    const totalTasks =
+        data.tasks.total || 0;
+
+    const pending =
+        data.tasks.pending || 0;
+
+    const inProgress =
+        data.tasks.in_progress || 0;
+
+    const completed =
+        data.tasks.completed || 0;
+
+    const cancelled =
+        data.tasks.cancelled || 0;
+
+
+    const donut =
+        document.createElement("div");
+
+    donut.className =
+        "task-donut";
+
+
+    if (totalTasks > 0) {
+
+        const pendingPercent =
+            (
+                pending /
+                totalTasks
+            ) * 100;
+
+        const progressPercent =
+            (
+                inProgress /
+                totalTasks
+            ) * 100;
+
+        const completedPercent =
+            (
+                completed /
+                totalTasks
+            ) * 100;
+
+
+        const pendingEnd =
+            pendingPercent;
+
+        const progressEnd =
+            pendingEnd +
+            progressPercent;
+
+        const completedEnd =
+            progressEnd +
+            completedPercent;
+
+
+        donut.style.background =
+            `conic-gradient(
+                #f59e0b 0% ${pendingEnd}%,
+                #3b82f6 ${pendingEnd}% ${progressEnd}%,
+                #10b981 ${progressEnd}% ${completedEnd}%,
+                #94a3b8 ${completedEnd}% 100%
+            )`;
+
+    } else {
+
+        donut.style.background =
+            "#e2e8f0";
+    }
+
+
+    const donutCentre =
+        document.createElement("div");
+
+    donutCentre.className =
+        "donut-centre";
+
+
+    const totalNumber =
+        document.createElement("strong");
+
+    totalNumber.textContent =
+        totalTasks;
+
+
+    const totalLabel =
+        document.createElement("span");
+
+    totalLabel.textContent =
+        "Tasks";
+
+
+    donutCentre.appendChild(
+        totalNumber
+    );
+
+    donutCentre.appendChild(
+        totalLabel
+    );
+
+    donut.appendChild(
+        donutCentre
+    );
+
+
+    // Legend
+
+    const legend =
+        document.createElement("div");
+
+    legend.className =
+        "chart-legend";
+
+
+    legend.innerHTML = `
+        <div>
+            <span class="legend-dot pending-dot"></span>
+            Pending: ${pending}
+        </div>
+
+        <div>
+            <span class="legend-dot progress-dot"></span>
+            In Progress: ${inProgress}
+        </div>
+
+        <div>
+            <span class="legend-dot completed-dot"></span>
+            Completed: ${completed}
+        </div>
+
+        <div>
+            <span class="legend-dot cancelled-dot"></span>
+            Cancelled: ${cancelled}
+        </div>
+    `;
+
+
+    taskChartCard.appendChild(
+        taskChartTitle
+    );
+
+    taskChartCard.appendChild(
+        donut
+    );
+
+    taskChartCard.appendChild(
+        legend
+    );
+
+
+
+    // -----------------------------------------
+    // MEETING STATUS CHART
+    // -----------------------------------------
+
+    const meetingChartCard =
+        document.createElement("div");
+
+    meetingChartCard.className =
+        "chart-card";
+
+
+    const meetingTitle =
+        document.createElement("h3");
+
+    meetingTitle.textContent =
+        "Meeting Status";
+
+
+    const totalMeetings =
+        data.meetings.total || 0;
+
+    const published =
+        data.meetings.published || 0;
+
+    const draft =
+        data.meetings.draft || 0;
+
+
+    let publishedPercent = 0;
+    let draftPercent = 0;
+
+
+    if (totalMeetings > 0) {
+
+        publishedPercent =
+            (
+                published /
+                totalMeetings
+            ) * 100;
+
+        draftPercent =
+            (
+                draft /
+                totalMeetings
+            ) * 100;
+    }
+
+
+    const meetingBars =
+        document.createElement("div");
+
+    meetingBars.className =
+        "meeting-bars";
+
+
+    meetingBars.innerHTML = `
+
+        <div class="bar-item">
+
+            <div class="bar-heading">
+
+                <span>Published</span>
+
+                <strong>
+                    ${published}
+                </strong>
+
+            </div>
+
+            <div class="bar-background">
+
+                <div
+                    class="bar-fill published-bar"
+                    style="width: ${publishedPercent}%"
+                ></div>
+
+            </div>
+
+        </div>
+
+
+        <div class="bar-item">
+
+            <div class="bar-heading">
+
+                <span>Draft</span>
+
+                <strong>
+                    ${draft}
+                </strong>
+
+            </div>
+
+            <div class="bar-background">
+
+                <div
+                    class="bar-fill draft-bar"
+                    style="width: ${draftPercent}%"
+                ></div>
+
+            </div>
+
+        </div>
+    `;
+
+
+    meetingChartCard.appendChild(
+        meetingTitle
+    );
+
+    meetingChartCard.appendChild(
+        meetingBars
+    );
+
+
+    chartArea.appendChild(
+        taskChartCard
+    );
+
+    chartArea.appendChild(
+        meetingChartCard
+    );
 }
 
 
@@ -324,47 +630,121 @@ async function loadTeamAnalytics() {
 
         teamAnalytics.innerHTML = "";
 
-        data.employees.forEach(
-            function (employee) {
+        data.employees.forEach(function (employee) {
 
-                const employeeBox =
-                    document.createElement("div");
+        const card =
+        document.createElement("div");
 
-                employeeBox.innerHTML =
-                    "<h3>" +
-                    employee.email +
-                    "</h3>" +
+        card.className =
+        "employee-flip-card";
 
-                    "<p>Total Tasks: " +
-                    employee.total_tasks +
-                    "</p>" +
 
-                    "<p>Pending: " +
-                    employee.pending_tasks +
-                    "</p>" +
+        const inner =
+        document.createElement("div");
 
-                    "<p>In Progress: " +
-                    employee.in_progress_tasks +
-                    "</p>" +
+        inner.className =
+        "employee-flip-inner";
 
-                    "<p>Completed: " +
-                    employee.completed_tasks +
-                    "</p>" +
 
-                    "<p>Overdue: " +
-                    employee.overdue_tasks +
-                    "</p>" +
+        const front =
+        document.createElement("div");
 
-                    "<p>Completion: " +
-                    employee.completion_percentage +
-                    "%</p><hr>";
+        front.className =
+        "employee-card-face employee-card-front";
 
-                teamAnalytics.appendChild(
-                    employeeBox
-                );
-            }
+
+        const back =
+        document.createElement("div");
+
+        back.className =
+        "employee-card-face employee-card-back";
+
+
+        // FRONT SIDE
+        front.innerHTML = `
+        <h3>
+            ${employee.name || "Employee"}
+        </h3>
+
+        <p>
+            <strong>Position:</strong>
+            ${employee.position || "Not specified"}
+        </p>
+
+        <p>
+            <strong>Email:</strong>
+            ${employee.email}
+        </p>
+
+        <p class="flip-hint">
+            Click to view analytics
+        </p>
+        `;
+
+
+        // BACK SIDE
+        back.innerHTML = `
+        <h3>
+            Employee Analytics
+        </h3>
+
+        <p>
+            Total Tasks:
+            <strong>${employee.total_tasks}</strong>
+        </p>
+
+        <p>
+            Pending:
+            <strong>${employee.pending_tasks}</strong>
+        </p>
+
+        <p>
+            In Progress:
+            <strong>${employee.in_progress_tasks}</strong>
+        </p>
+
+        <p>
+            Completed:
+            <strong>${employee.completed_tasks}</strong>
+        </p>
+
+        <p>
+            Overdue:
+            <strong>${employee.overdue_tasks}</strong>
+        </p>
+
+        <p>
+            Completion:
+            <strong>
+                ${employee.completion_percentage}%
+            </strong>
+        </p>
+
+        <p class="flip-hint">
+            Click to go back
+        </p>
+        `;
+
+
+        inner.appendChild(front);
+        inner.appendChild(back);
+
+        card.appendChild(inner);
+
+
+        card.addEventListener(
+        "click",
+        function () {
+
+            card.classList.toggle(
+                "flipped"
+            );
+        }
         );
 
+
+        teamAnalytics.appendChild(card);
+        });
 
         priorityBreakdown.innerHTML =
             "<p>High: " +
@@ -378,6 +758,10 @@ async function loadTeamAnalytics() {
             "<p>Low: " +
             data.priority_breakdown.low +
             "</p>";
+
+            renderPriorityChart(
+            data.priority_breakdown
+            );
 
 
         if (data.top_employee) {
@@ -404,6 +788,93 @@ async function loadTeamAnalytics() {
             error
         );
     }
+}
+
+function renderPriorityChart(priorityData) {
+
+    const chart =
+        document.getElementById(
+            "priorityChart"
+        );
+
+    const high =
+        priorityData.high || 0;
+
+    const medium =
+        priorityData.medium || 0;
+
+    const low =
+        priorityData.low || 0;
+
+    const total =
+        high + medium + low;
+
+
+    chart.innerHTML = "";
+
+
+    if (total === 0) {
+
+        chart.textContent =
+            "No priority data available.";
+
+        return;
+    }
+
+
+    const highPercent =
+        (high / total) * 100;
+
+    const mediumPercent =
+        (medium / total) * 100;
+
+    const lowPercent =
+        (low / total) * 100;
+
+
+    const highEnd =
+        highPercent;
+
+    const mediumEnd =
+        highEnd +
+        mediumPercent;
+
+
+    const donut =
+        document.createElement("div");
+
+    donut.className =
+        "priority-donut";
+
+
+    donut.style.background =
+        `conic-gradient(
+            #ef4444 0% ${highEnd}%,
+            #f59e0b ${highEnd}% ${mediumEnd}%,
+            #10b981 ${mediumEnd}% 100%
+        )`;
+
+
+    const centre =
+        document.createElement("div");
+
+    centre.className =
+        "priority-donut-centre";
+
+    centre.innerHTML = `
+        <strong>${total}</strong>
+        <span>Tasks</span>
+    `;
+
+
+    donut.appendChild(
+        centre
+    );
+
+
+    chart.appendChild(
+        donut
+    );
 }
 
 
@@ -439,210 +910,219 @@ async function loadManagerMeetings() {
 
         meetings.forEach(function (meeting) {
 
-            const meetingBox =
-                document.createElement("div");
+    const meetingCard =
+        document.createElement("div");
 
-            const title =
-                document.createElement("h3");
+    meetingCard.className =
+        "meeting-card";
 
-            title.textContent =
-                meeting.title +
-                " (Meeting ID: " +
-                meeting.id +
-                ")";
 
-            const status =
-                document.createElement("p");
+    const title =
+        document.createElement("h3");
 
-            status.textContent =
-                "Status: " +
-                meeting.status;
+    title.textContent =
+        meeting.title;
 
-            const file =
-                document.createElement("p");
 
-            file.textContent =
-                "File: " +
-                meeting.original_filename;
+    const meetingId =
+        document.createElement("p");
 
-            const published =
-                document.createElement("p");
+    meetingId.className =
+        "meeting-id";
 
-            published.textContent =
-                "Published: " +
-                (
-                    meeting.published_at
-                        ? new Date(
-                            meeting.published_at
-                        ).toLocaleString()
-                        : "Not published"
-                );
+    meetingId.textContent =
+        "Meeting ID: " + meeting.id;
 
-            const detailsButton =
-                document.createElement("button");
 
-            detailsButton.textContent =
-                "View Details";
+    const buttonRow =
+        document.createElement("div");
 
-            const reviewButton =
-                document.createElement("button");
+    buttonRow.className =
+        "meeting-card-actions";
 
-            reviewButton.textContent =
-                "Open Review";
 
-            const detailsBox =
-                document.createElement("div");
+    // INFO BUTTON
+    const infoButton =
+        document.createElement("button");
 
-            detailsBox.style.display =
-                "none";
+    infoButton.textContent =
+        "Info";
 
-            detailsButton.onclick =
-                function () {
+    infoButton.className =
+        "secondary-action";
 
-                    if (
-                        detailsBox.style.display ===
-                        "none"
-                    ) {
-                        detailsBox.style.display =
-                            "block";
 
-                        detailsButton.textContent =
-                            "Hide Details";
+    // VIEW DETAILS BUTTON
+    const detailsButton =
+        document.createElement("button");
 
-                    } else {
-                        detailsBox.style.display =
-                            "none";
+    detailsButton.textContent =
+        "View Details";
 
-                        detailsButton.textContent =
-                            "View Details";
+    detailsButton.className =
+        "secondary-action";
+
+
+    // OPEN REVIEW BUTTON
+    const reviewButton =
+        document.createElement("button");
+
+    reviewButton.textContent =
+        "Open Review";
+
+    reviewButton.className =
+        "primary-action";
+
+
+    // -------------------------------------------------
+    // INFO MODAL
+    // -------------------------------------------------
+
+    infoButton.onclick = function () {
+
+        openMeetingModal(
+            "Meeting Information",
+            `
+                <p><strong>Title:</strong> ${meeting.title}</p>
+
+                <p>
+                    <strong>Meeting ID:</strong>
+                    ${meeting.id}
+                </p>
+
+                <p>
+                    <strong>Date:</strong>
+                    ${
+                        meeting.meeting_date
+                            ? new Date(
+                                meeting.meeting_date
+                            ).toLocaleDateString()
+                            : "Not provided"
                     }
-                };
+                </p>
 
-            reviewButton.onclick =
-                function () {
+                <p>
+                    <strong>Status:</strong>
+                    ${meeting.status}
+                </p>
 
-                    window.location.href =
-                        "/meeting-review/" +
-                        meeting.id;
-                };
+                <p>
+                    <strong>Published:</strong>
+                    ${
+                        meeting.published_at
+                            ? new Date(
+                                meeting.published_at
+                            ).toLocaleString()
+                            : "Not published"
+                    }
+                </p>
 
-
-            // Extracted meeting text
-            const extractedTitle =
-                document.createElement("h4");
-
-            extractedTitle.textContent =
-                "Extracted Meeting Text";
-
-            const extractedText =
-                document.createElement("pre");
-
-            extractedText.textContent =
-                meeting.raw_text ||
-                "No extracted text available.";
-
-
-            // AI summary
-            const summaryTitle =
-                document.createElement("h4");
-
-            summaryTitle.textContent =
-                "Meeting Summary";
-
-            const summaryText =
-                document.createElement("p");
-
-            summaryText.textContent =
-                meeting.ai_summary ||
-                "No summary available.";
+                <p>
+                    <strong>File:</strong>
+                    ${meeting.original_filename}
+                </p>
+            `
+        );
+    };
 
 
-            // Decisions
-            const decisionsTitle =
-                document.createElement("h4");
+    // -------------------------------------------------
+    // DETAILS MODAL
+    // -------------------------------------------------
 
-            decisionsTitle.textContent =
-                "Decisions";
+    detailsButton.onclick = function () {
 
-            const decisionsContainer =
-                document.createElement("div");
+        let decisionsHtml =
+            "<p>No decisions available.</p>";
 
-            if (
-                meeting.decisions &&
-                meeting.decisions.length > 0
-            ) {
-                meeting.decisions.forEach(
-                    function (decision) {
+        if (
+            meeting.decisions &&
+            meeting.decisions.length > 0
+        ) {
 
-                        const decisionItem =
-                            document.createElement("p");
-
-                        decisionItem.textContent =
-                            "• " +
-                            decision.decision_text;
-
-                        decisionsContainer.appendChild(
-                            decisionItem
+            decisionsHtml =
+                meeting.decisions
+                    .map(function (decision) {
+                        return (
+                            "<p>• " +
+                            decision.decision_text +
+                            "</p>"
                         );
+                    })
+                    .join("");
+        }
+
+
+        openMeetingModal(
+            "Meeting Details",
+            `
+                <h4>Extracted Meeting Text</h4>
+
+                <pre class="modal-notes">
+${meeting.raw_text || "No extracted text available."}
+                </pre>
+
+
+                <h4>AI Summary</h4>
+
+                <p>
+                    ${
+                        meeting.ai_summary ||
+                        "No summary available."
                     }
-                );
-
-            } else {
-                decisionsContainer.textContent =
-                    "No decisions available.";
-            }
+                </p>
 
 
-            detailsBox.appendChild(
-                extractedTitle
-            );
+                <h4>Decisions</h4>
 
-            detailsBox.appendChild(
-                extractedText
-            );
-
-            detailsBox.appendChild(
-                summaryTitle
-            );
-
-            detailsBox.appendChild(
-                summaryText
-            );
-
-            detailsBox.appendChild(
-                decisionsTitle
-            );
-
-            detailsBox.appendChild(
-                decisionsContainer
-            );
+                ${decisionsHtml}
+            `
+        );
+    };
 
 
-            meetingBox.appendChild(title);
-            meetingBox.appendChild(status);
-            meetingBox.appendChild(file);
-            meetingBox.appendChild(published);
+    // -------------------------------------------------
+    // OPEN REVIEW
+    // -------------------------------------------------
 
-            meetingBox.appendChild(
-                detailsButton
-            );
+    reviewButton.onclick = function () {
 
-            meetingBox.appendChild(
-                reviewButton
-            );
+        window.location.href =
+            "/meeting-review/" +
+            meeting.id;
+    };
 
-            meetingBox.appendChild(
-                detailsBox
-            );
 
-            meetingBox.appendChild(
-                document.createElement("hr")
-            );
+    buttonRow.appendChild(
+        infoButton
+    );
 
-            meetingHistory.appendChild(
-                meetingBox
-            );
-        });
+    buttonRow.appendChild(
+        detailsButton
+    );
+
+    buttonRow.appendChild(
+        reviewButton
+    );
+
+
+    meetingCard.appendChild(
+        title
+    );
+
+    meetingCard.appendChild(
+        meetingId
+    );
+
+    meetingCard.appendChild(
+        buttonRow
+    );
+
+
+    meetingHistory.appendChild(
+        meetingCard
+    );
+    });
 
     } catch (error) {
 
@@ -656,6 +1136,95 @@ async function loadManagerMeetings() {
     }
 }
 
+function openMeetingModal(
+    title,
+    content
+) {
+
+    const overlay =
+        document.createElement("div");
+
+    overlay.className =
+        "meeting-modal-overlay";
+
+
+    const modal =
+        document.createElement("div");
+
+    modal.className =
+        "meeting-modal";
+
+
+    const heading =
+        document.createElement("h2");
+
+    heading.textContent =
+        title;
+
+
+    const contentBox =
+        document.createElement("div");
+
+    contentBox.className =
+        "meeting-modal-content";
+
+    contentBox.innerHTML =
+        content;
+
+
+    const closeButton =
+        document.createElement("button");
+
+    closeButton.textContent =
+        "Close";
+
+    closeButton.className =
+        "primary-action";
+
+
+    closeButton.onclick =
+        function () {
+
+            document.body.removeChild(
+                overlay
+            );
+        };
+
+
+    overlay.onclick =
+        function (event) {
+
+            if (event.target === overlay) {
+
+                document.body.removeChild(
+                    overlay
+                );
+            }
+        };
+
+
+    modal.appendChild(
+        heading
+    );
+
+    modal.appendChild(
+        contentBox
+    );
+
+    modal.appendChild(
+        closeButton
+    );
+
+
+    overlay.appendChild(
+        modal
+    );
+
+
+    document.body.appendChild(
+        overlay
+    );
+}
 
 // Lets the manager manually refresh the employee list.
 refreshEmployees.addEventListener("click", function () {

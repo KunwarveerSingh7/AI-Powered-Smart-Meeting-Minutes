@@ -1,3 +1,20 @@
+<!-- Source 1
+https://www.w3schools.com/howto/howto_css_login_form.asp
+reference for creating the login form 
+-->
+
+<!-- Source 2
+ https://getbootstrap.com/docs/5.3/forms/overview/
+ used for bootstrap form controls nd inpute-->
+
+ <!-- Source 3
+ https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input
+ connecting labels with inputs 
+ -->
+
+
+
+
 <!DOCTYPE html>
 
 <html lang="en">
@@ -6,17 +23,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Meeting Minutes</title>
 
+    <!-- bootstrap is used for the form and button styles-->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
     rel="stylesheet">
+    <!--css file for the design-->
     <link rel="stylesheet" href="/static/style.css">
 
 </head>
 <body>
 
+    <!--main login page container-->
+
     <div class="login-page">
 
+        <!-- login box container-->
         <div class="login-card">
 
+            <!-- logo for the app. the logo has been generated using canva.-->
             <img
                 src="/static/images/logo.png"
                 alt="Smart Meeting Minutes logo"
@@ -34,6 +57,7 @@
                 Sign in to continue to your dashboard
             </p>
 
+            <!-- login form: requires email and password-->
             <form id="loginForm">
 
                 <div class="mb-3">
@@ -74,6 +98,7 @@
 
                 </div>
 
+            <!-- erros from javascript will be shown here-->
                 <div
                     id="errorMessage"
                     class="error-message"
@@ -89,6 +114,7 @@
 
             </form>
 
+            <!--small helper message-->
             <p class="login-note">
                 Employees can log in using their company credentials.
                 If you are having trouble logging in,
@@ -99,6 +125,7 @@
 
     </div>
 
+    <!-- javascript file that handles the -->
     <script src="/static/login.js"></script>
 
 </body>

@@ -1,318 +1,165 @@
+<!--meeting file structure
+1. header
+2. meeeting info
+3. extracted notes
+4. ai summary
+5. decisiond
+6. ai genereated task
+7. publish button
+8. back to dahboard button (TODO: need omne at top as well)
+
+
+
+-->
+
+<!--Source 1
+https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/Structuring_documents
+organise the file structure
+-->
+<!--Source 2
+https://www.tutorialspoint.com/html/pdf/html_textarea_tag.pdf
+use of textarea to view and edit fields
+-->
+<!--source 3
+https://www.geeksforgeeks.org/html/html5-semantics/
+organise page into various sections
+-->
+<!--source 4
+https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/section
+divisions of the contents into sections
+-->
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Meeting Review</title>
-
-    <link
-        rel="stylesheet"
-        href="/static/style.css"
-    >
-
+    <!--link to the css file-->
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 
-
 <body>
-
 <div class="review-page">
 
-
-    <!-- ==========================================
-         HEADER
-    =========================================== -->
-
+    <!--header: logo and page heading-->
     <header class="dashboard-header">
-
         <div class="dashboard-brand">
-
-            <img
-                src="/static/images/logo.png"
-                alt="Smart Meeting Minutes logo"
-                class="dashboard-logo"
-            >
+            <!--logo of the application: generated with canva-->
+            <img src="/static/images/logo.png" alt="Smart Meeting Minutes logo" class="dashboard-logo">
 
             <div>
-
-                <h1>
-                    Meeting Review
-                </h1>
-
-                <p>
-                    Manager Portal
-                </p>
-
+                <h1> Meeting Review</h1>
+                <p> Manager Portal</p>
             </div>
-
         </div>
 
-
-        <button
-            type="button"
-            class="secondary-action"
-            onclick="goBack()"
-        >
-            Back to Dashboard
-        </button>
-
+        <!--takes the manager back to the dashboard, another button to be add to the botom of the page-->
+        <button type="button" class="secondary-action" onclick="goBack()"> Back to Dashboard</button>
     </header>
 
-
-
+    <!--main body of this page-->
     <main class="review-content">
-
-
-        <!-- ======================================
-             MEETING OVERVIEW
-        ======================================= -->
-
+        <!--section 1: meeting information-->
         <section class="review-heading">
-
-            <div>
-
-                <p class="review-label">
-                    REVIEWING MEETING
-                </p>
-
-                <h2 id="meetingTitle">
-                    Meeting
-                </h2>
-
-                <p id="meetingFile">
-                    Loading meeting information...
-                </p>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- ======================================
-             EXTRACTED NOTES
-        ======================================= -->
-
-        <section class="review-section">
-
-            <div class="review-section-heading">
-
-                <div>
-
-                    <h2>
-                        Extracted Meeting Notes
-                    </h2>
-
-                    <p>
-                        Original text extracted from the uploaded meeting file.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <pre
-                id="meetingText"
-                class="meeting-text-box"
-            >Loading Meeting...</pre>
-
-        </section>
-
-
-
-        <!-- ======================================
-             AI SUMMARY
-        ======================================= -->
-
-        <section class="review-section">
-
-            <div class="review-section-heading">
-
-                <div>
-
-                    <h2>
-                        AI Summary
-                    </h2>
-
-                    <p>
-                        Review and edit the generated meeting summary before publishing.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <textarea
-                id="aiSummary"
-                class="review-textarea"
-                rows="6"
-            ></textarea>
-
-
-            <div class="review-action-row">
-
-                <button
-                    type="button"
-                    class="primary-action"
-                    onclick="saveSummary()"
-                >
-                    Save Summary
-                </button>
-
-                <p
-                    id="summaryMessage"
-                    class="review-message"
-                ></p>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- ======================================
-             DECISIONS
-        ======================================= -->
-
-        <section class="review-section">
-
-            <div class="review-section-heading">
-
-                <div>
-
-                    <h2>
-                        Decisions
-                    </h2>
-
-                    <p>
-                        Review decisions identified from the meeting.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div
-                id="decisions"
-                class="decision-list"
-            >
-                No decisions available.
-            </div>
-
-
-            <p
-                id="decisionMessage"
-                class="review-message"
-            ></p>
-
-        </section>
-
-
-
-        <!-- ======================================
-             AI GENERATED TASKS
-        ======================================= -->
-
-        <section class="review-section">
-
-            <div class="review-section-heading">
-
-                <div>
-
-                    <h2>
-                        AI-Generated Tasks
-                    </h2>
-
-                    <p>
-                        Check task details, deadlines, priorities and employee assignments.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div
-                id="tasks"
-                class="task-review-list"
-            >
-                No tasks available.
-            </div>
-
-        </section>
-
-
-
-        <!-- ======================================
-             PUBLISH
-        ======================================= -->
-
-        <section class="publish-section">
-
-            <div class="publish-information">
-
-                <h2>
-                    Ready to Publish?
-                </h2>
-
-                <p>
-                    Make sure the summary, decisions and tasks have been reviewed before publishing this meeting to employees.
-                </p>
-
-            </div>
-
-
-            <button
-                type="button"
-                class="publish-button"
-                onclick="publishMeeting()"
-            >
-                Publish Meeting
-            </button>
-
-
-            <p
-                id="publishMessage"
-                class="review-message"
-            ></p>
-
-        </section>
-
-
-
-        <!-- ======================================
-             BOTTOM NAVIGATION
-        ======================================= -->
-
-        <div class="review-bottom-navigation">
-
-            <button
-                type="button"
-                class="secondary-action"
-                onclick="goBack()"
-            >
-                Back to Manager Dashboard
-            </button>
-
+        <div>
+            <p class="review-label"> REVIEWING MEETING</p>
+            <!--meeting title and file loaded by javascript-->
+            <h2 id="meetingTitle"> Meeting</h2>
+            <p id="meetingFile"> Loading meeting information...</p>
         </div>
 
+        </section>
+
+        <!--section 2: extracted text from the meeting  -->
+        <section class="review-section">
+        <div class="review-section-heading">
+            <div>
+                <h2> Extracted Meeting Notes</h2>
+                <!--helper message-->
+                <p>Original text extracted from the uploaded meeting file.</p>
+            </div>
+        </div>
+        <!--extracted meeting text displayed here-->
+        <pre id="meetingText" class="meeting-text-box"> Loading Meeting...</pre>
+
+        </section>
+
+        <!--section3: ai summary with edit optionse  -->
+        <section class="review-section">
+        <div class="review-section-heading">
+            <div>
+                <h2>AI Summary </h2>
+                <p> Review and edit the generated meeting summary before publishing.  </p>
+
+            </div>
+            </div>
+            <!--text area made editable for the manager-->
+            <textarea id="aiSummary" class="review-textarea" rows="6"></textarea>
+
+
+        <div class="review-action-row">
+            <button type="button" class="primary-action" onclick="saveSummary()">Save Summary   </button>
+            <!--success or error message for saving summary-->
+            <p id="summaryMessage"  class="review-message"></p>
+        </div>
+
+        </section>
+
+        <!--section 4: decisions: also editable for managerr -->
+        <section class="review-section">
+            <div class="review-section-heading">
+                <div>
+                    <h2>Decisions</h2>
+                    <p>Review decisions identified from the meeting.  </p>
+                </div>
+            </div>
+
+            <!--js file add extracted decisions here-->
+            <div id="decisions" class="decision-list">  No decisions available.</div>
+            <p id="decisionMessage" class="review-message"></p>
+
+        </section>
+
+        <!--section 5: taks generated by ai: manager can review-->
+        <section class="review-section">
+        <div class="review-section-heading">
+            <div>
+                <h2>AI-Generated Tasks</h2>
+                <p>  Check task details, deadlines, priorities and employee assignments.</p>
+
+            </div>
+            </div>
+        <!--task card added here using js file-->
+        <div id="tasks" class="task-review-list"> No tasks available.</div>
+        </section>
+
+        <!--section 6: publisj button for the meeting-->
+        <section class="publish-section">
+            <div class="publish-information">
+                <h2> Ready to Publish?</h2>
+
+                <p>Make sure the summary, decisions and tasks have been reviewed before publishing this meeting to employees. </p>
+            </div>
+
+            <button type="button" class="publish-button" onclick="publishMeeting()"> Publish Meeting</button>
+            <!--show result message of publishing meeting from js file-->
+            <p id="publishMessage" class="review-message"></p>
+
+        </section>
+
+        <!--bottom navigation optiom-->
+        <div class="review-bottom-navigation">
+            <button type="button" class="secondary-action" onclick="goBack()"> Back to Manager Dashboard </button>
+        </div>
 
     </main>
 
 </div>
 
-
+<!--js file used to add functions to the meeting-->
 <script src="/static/meeting_review.js"></script>
 
 </body>
-
 </html>

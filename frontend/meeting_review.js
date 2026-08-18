@@ -1,164 +1,114 @@
-const token =
-    localStorage.getItem("access_token");
 
+
+const token = localStorage.getItem("access_token");
+// employee info stored here are after loading
 let employeeList = [];
 
 
-// Load employees for task assignment
+// Load employees for task assignment by manager
 async function loadEmployees() {
-
     try {
-        const response = await fetch(
-            "/employees",
-            {
-                headers: {
-                    "Authorization":
-                        "Bearer " + token
-                }
-            }
-        );
-
+        // authorisation request to get employes
+        const response = await fetch("/employees",{
+            headers: {"Authorization":"Bearer " + token}
+        });
+        // stop here if informatiom not laoaded
         if (!response.ok) {
-            console.error(
-                "Could not load employees."
-            );
-            return;
-        }
+            console.error("Could not load employees.");
+            return;}
 
-        employeeList =
-            await response.json();
-
+        employeeList = await response.json();
+        
+    //error message
     } catch (error) {
-        console.error(
-            "Employee loading error:",
-            error
-        );
-    }
+        console.error("Employee loading error:", error);}
 }
 
-
-
-// Existing meeting function starts here
+// load the selected meeting and pass ist functions
 async function loadMeeting() {
-
-    if (!token) {
-        window.location.href = "/login-page";
-        return;
+    //user without the access token cannot access
+    if (!token) {window.location.href = "/login-page";
+    return;
     }
-    
-
-    const parts =
-        window.location.pathname.split("/");
-
-    const meetingId =
-        parts[parts.length - 1];
+    // get metting id
+    const parts = window.location.pathname.split("/");
+    const meetingId = parts[parts.length - 1];
 
     try {
-
-        const response = await fetch(
-            "/meetings/" + meetingId,
-            {
-                headers: {
-                    "Authorization":
-                        "Bearer " + token
-                }
-            }
-        );
-
+        // upon getting the meeting id, ask backend for that
+        const response = await fetch("/meetings/" + meetingId, {
+                headers: {"Authorization": "Bearer " + token }
+        });
+        //show error on page if meeting not loaded
         if (!response.ok) {
-            document.getElementById(
-                "meetingText"
-            ).textContent =
+            document.getElementById("meetingText").textContent =
                 "Could not load meeting.";
-
             return;
         }
-
+        // backend send meeting info as json
         const meeting =
             await response.json();
 
-        document.getElementById(
-            "meetingTitle"
-        ).textContent =
-            meeting.title;
-
-        document.getElementById(
-            "meetingFile"
-        ).textContent =
-            "File: " + meeting.original_filename;
-
-        document.getElementById(
-            "meetingText"
-        ).textContent =
+        //add meeting title to the page
+        document.getElementById("meetingTitle").textContent =
+        meeting.title;
+        //show the file name for the uploaded doc
+        document.getElementById("meetingFile").textContent =
+        "File: " + meeting.original_filename;
+        //raw text contain original text extracted using file_handler.py
+        document.getElementById("meetingText").textContent =
             meeting.raw_text;
+        // put ai genereted text summary in the text area
+        document.getElementById("aiSummary").value =
+        meeting.ai_summary || "";
 
-            // Display AI summary
-document.getElementById(
-    "aiSummary"
-).value =
-    meeting.ai_summary || "";
+        // Display decisions
+        const decisionsContainer = document.getElementById("decisions");
+        decisionsContainer.innerHTML = "";
 
-// Display decisions
-const decisionsContainer =
-    document.getElementById("decisions");
-
-decisionsContainer.innerHTML = "";
-
-if (
-    meeting.decisions &&
-    meeting.decisions.length > 0
-) {
-    meeting.decisions.forEach(
+        //check if the meeting has any recorded decisions
+        if (
+        meeting.decisions &&
+        meeting.decisions.length > 0
+        ) 
+        
+        {meeting.decisions.forEach(
+        
         function (decision) {
 
-            const decisionBox =
-                document.createElement("div");
-
-            const input =
-                document.createElement("textarea");
+            //create editable area for each decision
+            const decisionBox = document.createElement("div");
+            const input = document.createElement("textarea");
 
             input.rows = 3;
             input.style.width = "100%";
-            input.value =
-                decision.decision_text;
+            input.value = decision.decision_text;
+            //save button for each decision
+            const button = document.createElement("button");
 
-            const button =
-                document.createElement("button");
-
-            button.textContent =
-                "Save Decision";
+            button.textContent = "Save Decision";
 
             button.onclick = function () {
-                saveDecision(
-                    decision.id,
-                    input.value
-                );
+                saveDecision(decision.id, input.value);
             };
 
             decisionBox.appendChild(input);
             decisionBox.appendChild(button);
 
-            decisionsContainer.appendChild(
-                decisionBox
-            );
+            decisionsContainer.appendChild(decisionBox);
+        });
+        } 
+        else {decisionsContainer.textContent =
+            "No decisions identified.";
         }
-    );
-} else {
-    decisionsContainer.textContent =
-        "No decisions identified.";
-}
 
 
-// Display AI-generated tasks
-const tasksContainer =
-    document.getElementById("tasks");
+        // Display AI-generated tasks
+        const tasksContainer = document.getElementById("tasks");
+        tasksContainer.innerHTML = "";
 
-tasksContainer.innerHTML = "";
-
-if (
-    meeting.tasks &&
-    meeting.tasks.length > 0
-) {
+        if (meeting.tasks &&
+            meeting.tasks.length > 0) {
     meeting.tasks.forEach(function (task) {
 
         const taskBox =

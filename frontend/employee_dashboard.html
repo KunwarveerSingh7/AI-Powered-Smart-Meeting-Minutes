@@ -7,122 +7,380 @@
 
     <!-- the dashboard doesnt need to have the add meeting minutes option. that would be exclusive to the employee -->
     <title>Employee Dashboard</title>
+
+    <link rel="stylesheet"
+    href="/static/style.css">
 </head>
 
     <body>
 
-        <div class="dashboard">
+        <div class="dashboard-page">
 
-            <h1> Employee Dashboard</h1>
+            <header class="dashboard-header">
 
-            <p id="welcome_message">
-    Welcome
-</p>
+                <div class="dashboard-brand">
 
-<hr>
+                <img src="/static/images/logo.png"
+                alt="Smart Meeting Minutes Logo"
+                class="dashboard-logo">
 
-<h2>My Analytics</h2>
+                <div>
 
-<div id="employeeAnalytics">
+                    <h1> Employee Portal</h1>
+                </div>
 
-    <div>
-        <strong>Total Assigned Tasks:</strong>
-        <span id="employeeTotalTasks">0</span>
-    </div>
+                </div>
 
-    <div>
-        <strong>Pending:</strong>
-        <span id="employeePendingTasks">0</span>
-    </div>
+                <button type="button"
+                class="logout-button"
+                onclick="logout()">
+                Logout
+                </button>
 
-    <div>
-        <strong>In Progress:</strong>
-        <span id="employeeInProgressTasks">0</span>
-    </div>
-
-    <div>
-        <strong>Completed:</strong>
-        <span id="employeeCompletedTasks">0</span>
-    </div>
-
-    <div>
-        <strong>Overdue:</strong>
-        <span id="employeeOverdueTasks">0</span>
-    </div>
-
-    <div>
-        <strong>Completion:</strong>
-        <span id="employeeCompletionPercentage">0%</span>
-    </div>
-
-</div>
-
-<hr>
-
-<h2>My Tasks</h2>
-
-<button type="button" id="refreshTasks">
-    Refresh Tasks
-</button>
-
-<div id="taskList">
-    Loading tasks...
-</div>
-
-<hr>
-
-<h2>Meeting Information</h2>
-
-<!-- Meeting Summary -->
-<button type="button" id="showMeetingSummary">
-    Meeting Summary
-</button>
-
-<div id="meetingSummaryBox" style="display: none;">
-</div>
-
-<br><br>
+            </header>
 
 
-<!-- Meeting Decisions -->
-<button type="button" id="showDecisions">
-    Decisions
-</button>
+            <main class="dashboard-content">
 
-<div id="decisionsBox" style="display: none;">
-</div>
+            <section class="dashboard-section">
 
-<br><br>
+            <div class="section-heading">
+
+                <div>
+                    <h2>
+                        Personal Details
+                    </h2>
+
+                    <p>
+                        Your employee profile information.
+                    </p>
+                </div>
+
+            </div>
 
 
-<!-- Original extracted meeting notes -->
-<button type="button" id="showMeetingNotes">
-    Extracted Meeting Notes
-</button>
+            <div class="employee-profile-card">
 
-<div id="meetingNotesBox" style="display: none;">
-</div>
+                <div>
+                    <span class="profile-label">
+                        Name
+                    </span>
+
+                    <strong id="employeeProfileName">
+                        Loading...
+                    </strong>
+                </div>
 
 
-<hr>
+                <div>
+                    <span class="profile-label">
+                        Position
+                    </span>
 
-<h2>Task History</h2>
+                    <strong id="employeeProfilePosition">
+                        Loading...
+                    </strong>
+                </div>
 
-<button type="button" id="showTaskHistory">
-    Task History
-</button>
 
-<div id="taskHistoryList" style="display: none;">
-</div>
+                <div>
+                    <span class="profile-label">
+                        Email
+                    </span>
 
-            
+                    <strong id="employeeProfileEmail">
+                        Loading...
+                    </strong>
+                </div>
 
-            <br><br>
+            </div>
 
-            <!-- the functionality is definitely basic as it needs the backend development -->
-            <button onclick="logout()">
-            Logout
-        </button>
+
+            <!-- Keep this because your current JS uses it -->
+            <p
+                id="welcome_message"
+                style="display: none;"
+            >
+                Welcome
+            </p>
+
+            </section>
+
+
+
+        <!-- ======================================
+             MY ANALYTICS
+        ======================================= -->
+
+            <section class="dashboard-section">
+
+                <div class="section-heading">
+
+                    <div>
+                        <h2>
+                        My Analytics
+                        </h2>
+
+                        <p>
+                        Overview of your assigned task progress.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="employeeAnalytics"
+                    class="analytics-grid"
+            >
+
+                    <div class="analytics-card">
+                        <span id="employeeTotalTasks">0</span>
+
+                        <strong>
+                        Total Assigned Tasks
+                        </strong>
+                    </div>
+
+
+                <div class="analytics-card">
+                    <span id="employeePendingTasks">0</span>
+
+                    <strong>
+                        Pending
+                    </strong>
+                </div>
+
+
+                <div class="analytics-card">
+                    <span id="employeeInProgressTasks">0</span>
+
+                    <strong>
+                        In Progress
+                    </strong>
+                </div>
+
+
+                <div class="analytics-card">
+                    <span id="employeeCompletedTasks">0</span>
+
+                    <strong>
+                        Completed
+                    </strong>
+                </div>
+
+
+                <div class="analytics-card">
+                    <span id="employeeOverdueTasks">0</span>
+
+                    <strong>
+                        Overdue
+                    </strong>
+                </div>
+
+
+                <div class="analytics-card">
+                    <span id="employeeCompletionPercentage">0%</span>
+
+                    <strong>
+                        Completion
+                    </strong>
+                </div>
+
+                </div>
+
+
+                <div
+                id="employeeChartArea"
+                class="chart-area"
+                >
+                </div>
+
+            </section>
+
+
+
+        <!-- ======================================
+             MY TASKS
+        ======================================= -->
+
+            <section class="dashboard-section">
+
+                <div class="section-heading">
+
+                    <div>
+                    <h2>
+                        My Tasks
+                    </h2>
+
+                    <p>
+                        View and update your active assigned tasks.
+                    </p>
+                    </div>
+
+
+                    <button
+                    type="button"
+                    id="refreshTasks"
+                    class="secondary-action"
+                    >
+                    Refresh Tasks
+                    </button>
+
+                </div>
+
+
+                <div class="employee-task-scroll">
+
+                    <div
+                    id="taskList"
+                    class="employee-task-columns"
+                    >
+                    Loading tasks...
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+        <!-- ======================================
+             MEETING INFORMATION
+        ======================================= -->
+
+            <section class="dashboard-section">
+
+                <div class="section-heading">
+
+                    <div>
+                    <h2>
+                        Meeting Information
+                    </h2>
+
+                    <p>
+                        View published meeting summaries, decisions and notes.
+                    </p>
+                    </div>
+
+                </div>
+
+
+                <div
+                id="employeeMeetingList"
+                class="employee-meeting-list"
+                >
+                Loading meetings...
+                </div>
+
+
+            <!-- Keep old IDs temporarily because current JS uses them -->
+                <div
+                id="meetingSummaryBox"
+                style="display: none;"
+                >
+                </div>
+
+                <div
+                id="decisionsBox"
+                style="display: none;"
+                >
+                </div>
+
+                <div
+                id="meetingNotesBox"
+                style="display: none;"
+                >
+                </div>
+
+
+            <!-- Old buttons temporarily hidden -->
+                <button
+                type="button"
+                id="showMeetingSummary"
+                style="display: none;"
+                >
+                Meeting Summary
+                </button>
+
+                <button
+                type="button"
+                id="showDecisions"
+                style="display: none;"
+                >
+                Decisions
+                </button>
+
+                <button
+                type="button"
+                id="showMeetingNotes"
+                style="display: none;"
+                >
+                Extracted Meeting Notes
+                </button>
+
+            </section>
+
+
+
+        <!-- ======================================
+             TASK HISTORY
+        ======================================= -->
+
+            <section class="dashboard-section">
+
+                <div class="section-heading">
+
+                <div>
+                    <h2>
+                        Task History
+                    </h2>
+
+                    <p>
+                        View your completed tasks.
+                    </p>
+                </div>
+
+
+                <button
+                    type="button"
+                    id="showTaskHistory"
+                    class="secondary-action"
+                >
+                    Task History
+                </button>
+
+                </div>
+
+
+                <div
+                id="taskHistoryList"
+                class="task-history-list"
+                style="display: none;"
+                >
+                </div>
+
+            </section>
+
+
+
+        <!-- ======================================
+             BOTTOM LOGOUT
+        ======================================= -->
+
+            <section class="dashboard-footer">
+
+                <button
+                type="button"
+                class="logout-button"
+                onclick="logout()"
+                >
+                Logout
+                </button>
+
+            </section>
+
+            </main>
 
         </div>
 

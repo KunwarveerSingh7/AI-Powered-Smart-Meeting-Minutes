@@ -28,13 +28,30 @@ async function checkEmployee() {
             return;
         }
 
-        document.getElementById("welcome_message").textContent =
-    "Welcome " +
-    (user.name || user.email) +
-    " — " +
-    (user.position || "Employee") +
-    " — " +
-    user.email;
+        // Employee profile details
+        document.getElementById(
+            "employeeProfileName"
+        ).textContent =
+        user.name || "Not specified";
+
+        document.getElementById(
+            "employeeProfilePosition"
+        ).textContent =
+        user.position || "Employee";
+
+        document.getElementById(
+            "employeeProfileEmail"
+        ).textContent =
+        user.email;
+
+
+        // Keep this old element available
+        // because some existing code may still use it.
+        document.getElementById(
+            "welcome_message"
+        ).textContent =
+        "Welcome " +
+        (user.name || user.email);
 
     } catch (error) {
         localStorage.removeItem("access_token");
@@ -79,6 +96,8 @@ const showMeetingNotes =
 const meetingNotesBox =
     document.getElementById("meetingNotesBox");
 
+const employeeMeetingList = document.getElementById("employeeMeetingList");
+
 
 async function loadTasks() {
 
@@ -103,6 +122,7 @@ async function loadTasks() {
             await response.json();
 
         taskList.innerHTML = "";
+        let currentColumn = null;
 
         if (tasks.length === 0) {
             taskList.textContent =
@@ -111,6 +131,22 @@ async function loadTasks() {
         }
 
         tasks.forEach(function (task) {
+
+            const taskIndex =
+            tasks.indexOf(task);
+
+        if (taskIndex % 3 === 0) {
+
+            currentColumn =
+                document.createElement("div");
+
+            currentColumn.className =
+                "employee-task-column";
+
+            taskList.appendChild(
+                currentColumn
+            );
+        }
 
             const taskBox =
                 document.createElement("div");
@@ -300,7 +336,9 @@ taskBox.appendChild(progressMessage);
 taskBox.appendChild(historyButton);
 taskBox.appendChild(historyContainer);
 
-taskList.appendChild(taskBox);
+currentColumn.appendChild(
+    taskBox
+);
         });
 
     } catch (error) {
@@ -375,6 +413,9 @@ async function loadCompletedTasks() {
             const taskBox =
                 document.createElement("div");
 
+            taskBox.className = 
+            "employee-history-card";    
+
             const title =
                 document.createElement("h3");
 
@@ -421,9 +462,7 @@ async function loadCompletedTasks() {
             taskBox.appendChild(status);
             taskBox.appendChild(deadline);
 
-            taskBox.appendChild(
-                document.createElement("hr")
-            );
+            
 
             taskHistoryList.appendChild(
                 taskBox
@@ -564,6 +603,8 @@ async function loadEmployeeAnalytics() {
         ).textContent =
             data.completion_percentage + "%";
 
+        renderEmployeeAnalyticsChart(data);
+
     } catch (error) {
 
         console.error(
@@ -571,6 +612,529 @@ async function loadEmployeeAnalytics() {
             error
         );
     }
+}
+
+
+function renderEmployeeAnalyticsChart(data) {
+
+    const chartArea =
+        document.getElementById(
+            "employeeChartArea"
+        );
+
+    chartArea.innerHTML = "";
+
+
+    const chartCard =
+        document.createElement("div");
+
+    chartCard.className =
+        "chart-card employee-chart-card";
+
+
+    const title =
+        document.createElement("h3");
+
+    title.textContent =
+        "My Task Status";
+
+
+    const total =
+        data.total_tasks || 0;
+
+    const pending =
+        data.pending_tasks || 0;
+
+    const inProgress =
+        data.in_progress_tasks || 0;
+
+    const completed =
+        data.completed_tasks || 0;
+
+
+    const donut =
+        document.createElement("div");
+
+    donut.className =
+        "employee-task-donut";
+
+
+    if (total > 0) {
+
+        const pendingPercent =
+            (pending / total) * 100;
+
+        const progressPercent =
+            (inProgress / total) * 100;
+
+        const completedPercent =
+            (completed / total) * 100;
+
+
+        const pendingEnd =
+            pendingPercent;
+
+        const progressEnd =
+            pendingEnd +
+            progressPercent;
+
+        const completedEnd =
+            progressEnd +
+            completedPercent;
+
+
+        donut.style.background =
+            `conic-gradient(
+                #f59e0b 0% ${pendingEnd}%,
+                #3b82f6 ${pendingEnd}% ${progressEnd}%,
+                #10b981 ${progressEnd}% ${completedEnd}%,
+                #e2e8f0 ${completedEnd}% 100%
+            )`;
+
+    } else {
+
+        donut.style.background =
+            "#e2e8f0";
+    }
+
+
+    const centre =
+        document.createElement("div");
+
+    centre.className =
+        "employee-donut-centre";
+
+
+    centre.innerHTML = `
+        <strong>
+            ${data.completion_percentage || 0}%
+        </strong>
+
+        <span>
+            Complete
+        </span>
+    `;
+
+
+    donut.appendChild(
+        centre
+    );
+
+
+    const legend =
+        document.createElement("div");
+
+    legend.className =
+        "chart-legend";
+
+
+    legend.innerHTML = `
+
+        <div>
+            <span
+                class="legend-dot pending-dot"
+            ></span>
+
+            Pending: ${pending}
+        </div>
+
+        <div>
+            <span
+                class="legend-dot progress-dot"
+            ></span>
+
+            In Progress: ${inProgress}
+        </div>
+
+        <div>
+            <span
+                class="legend-dot completed-dot"
+            ></span>
+
+            Completed: ${completed}
+        </div>
+
+        <div>
+            <span
+                class="legend-dot overdue-dot"
+            ></span>
+
+            Overdue: ${data.overdue_tasks || 0}
+        </div>
+    `;
+
+
+    chartCard.appendChild(title);
+    chartCard.appendChild(donut);
+    chartCard.appendChild(legend);
+
+    chartArea.appendChild(
+        chartCard
+    );
+}
+
+async function loadEmployeeMeetings() {
+
+    try {
+
+        const meetings =
+            await getAccessibleMeetings();
+
+
+        employeeMeetingList.innerHTML = "";
+
+
+        if (meetings.length === 0) {
+
+            employeeMeetingList.textContent =
+                "No published meetings available.";
+
+            return;
+        }
+
+
+        meetings.forEach(function (meeting) {
+
+            const meetingCard =
+                document.createElement("div");
+
+            meetingCard.className =
+                "meeting-card employee-meeting-card";
+
+
+            // Meeting title
+            const title =
+                document.createElement("h3");
+
+            title.textContent =
+                meeting.title;
+
+
+            // Meeting ID
+            const meetingId =
+                document.createElement("p");
+
+            meetingId.className =
+                "meeting-id";
+
+            meetingId.textContent =
+                "Meeting ID: " +
+                meeting.id;
+
+
+            // Meeting date
+            const meetingDate =
+                document.createElement("p");
+
+            meetingDate.className =
+                "employee-meeting-date";
+
+            meetingDate.textContent =
+                "Date: " +
+                (
+                    meeting.meeting_date
+                        ? new Date(
+                            meeting.meeting_date
+                        ).toLocaleDateString()
+                        : "Not provided"
+                );
+
+
+            // Buttons
+            const actions =
+                document.createElement("div");
+
+            actions.className =
+                "meeting-card-actions";
+
+
+            const summaryButton =
+                document.createElement("button");
+
+            summaryButton.className =
+                "secondary-action";
+
+            summaryButton.textContent =
+                "Meeting Summary";
+
+
+            const decisionsButton =
+                document.createElement("button");
+
+            decisionsButton.className =
+                "secondary-action";
+
+            decisionsButton.textContent =
+                "Decisions";
+
+
+            const notesButton =
+                document.createElement("button");
+
+            notesButton.className =
+                "secondary-action";
+
+            notesButton.textContent =
+                "Extracted Meeting Notes";
+
+
+            // -----------------------------------
+            // Summary popup
+            // -----------------------------------
+
+            summaryButton.onclick =
+                function () {
+
+                    openEmployeeMeetingModal(
+                        meeting.title +
+                        " — Meeting Summary",
+
+                        `
+                            <p>
+                                ${
+                                    escapeHtml(
+                                        meeting.ai_summary ||
+                                        "No summary available."
+                                    )
+                                }
+                            </p>
+                        `
+                    );
+                };
+
+
+            // -----------------------------------
+            // Decisions popup
+            // -----------------------------------
+
+            decisionsButton.onclick =
+                function () {
+
+                    let decisionHtml =
+                        "<p>No decisions available.</p>";
+
+
+                    if (
+                        meeting.decisions &&
+                        meeting.decisions.length > 0
+                    ) {
+
+                        decisionHtml =
+                            meeting.decisions
+                                .map(
+                                    function (decision) {
+
+                                        return (
+                                            "<p>• " +
+                                            escapeHtml(
+                                                decision.decision_text
+                                            ) +
+                                            "</p>"
+                                        );
+                                    }
+                                )
+                                .join("");
+                    }
+
+
+                    openEmployeeMeetingModal(
+                        meeting.title +
+                        " — Decisions",
+
+                        decisionHtml
+                    );
+                };
+
+
+            // -----------------------------------
+            // Extracted notes popup
+            // -----------------------------------
+
+            notesButton.onclick =
+                function () {
+
+                    openEmployeeMeetingModal(
+                        meeting.title +
+                        " — Extracted Meeting Notes",
+
+                        `
+                            <pre class="modal-notes">${
+                                escapeHtml(
+                                    meeting.raw_text ||
+                                    "No extracted meeting notes available."
+                                )
+                            }</pre>
+                        `
+                    );
+                };
+
+
+            actions.appendChild(
+                summaryButton
+            );
+
+            actions.appendChild(
+                decisionsButton
+            );
+
+            actions.appendChild(
+                notesButton
+            );
+
+
+            meetingCard.appendChild(
+                title
+            );
+
+            meetingCard.appendChild(
+                meetingId
+            );
+
+            meetingCard.appendChild(
+                meetingDate
+            );
+
+            meetingCard.appendChild(
+                actions
+            );
+
+
+            employeeMeetingList.appendChild(
+                meetingCard
+            );
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Employee meetings error:",
+            error
+        );
+
+        employeeMeetingList.textContent =
+            "Unable to load meeting information.";
+    }
+}
+
+function openEmployeeMeetingModal(
+    title,
+    content
+) {
+
+    const overlay =
+        document.createElement("div");
+
+    overlay.className =
+        "meeting-modal-overlay";
+
+
+    const modal =
+        document.createElement("div");
+
+    modal.className =
+        "meeting-modal";
+
+
+    const headingRow =
+        document.createElement("div");
+
+    headingRow.className =
+        "employee-modal-heading";
+
+
+    const heading =
+        document.createElement("h2");
+
+    heading.textContent =
+        title;
+
+
+    const closeButton =
+        document.createElement("button");
+
+    closeButton.type =
+        "button";
+
+    closeButton.className =
+        "employee-modal-close";
+
+    closeButton.textContent =
+        "×";
+
+
+    const contentBox =
+        document.createElement("div");
+
+    contentBox.className =
+        "meeting-modal-content";
+
+    contentBox.innerHTML =
+        content;
+
+
+    function closeModal() {
+
+        if (document.body.contains(overlay)) {
+
+            document.body.removeChild(
+                overlay
+            );
+        }
+    }
+
+
+    closeButton.onclick =
+        closeModal;
+
+
+    overlay.onclick =
+        function (event) {
+
+            if (event.target === overlay) {
+
+                closeModal();
+            }
+        };
+
+
+    headingRow.appendChild(
+        heading
+    );
+
+    headingRow.appendChild(
+        closeButton
+    );
+
+
+    modal.appendChild(
+        headingRow
+    );
+
+    modal.appendChild(
+        contentBox
+    );
+
+
+    overlay.appendChild(
+        modal
+    );
+
+
+    document.body.appendChild(
+        overlay
+    );
+}
+
+function escapeHtml(value) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent =
+        value;
+
+    return div.innerHTML;
 }
 
 
@@ -684,319 +1248,6 @@ refreshTasks.addEventListener(
     loadTasks
 );
 
-showMeetingNotes.addEventListener(
-    "click",
-    async function () {
-
-        try {
-
-            const meetings =
-                await getAccessibleMeetings();
-
-            meetingNotesBox.innerHTML = "";
-
-            if (meetings.length === 0) {
-
-                meetingNotesBox.textContent =
-                    "No published meeting notes available.";
-
-                meetingNotesBox.style.display =
-                    "block";
-
-                return;
-            }
-
-            meetings.forEach(
-                function (meeting) {
-
-                    const meetingBox =
-                        document.createElement("div");
-
-                    const title =
-                        document.createElement("h3");
-
-                    title.textContent =
-                        meeting.title +
-                        " (Meeting ID: " +
-                        meeting.id +
-                        ")";
-
-                    const notes =
-                        document.createElement("pre");
-
-                    notes.textContent =
-                        meeting.raw_text ||
-                        "No extracted meeting notes available.";
-
-                    meetingBox.appendChild(title);
-                    meetingBox.appendChild(notes);
-
-                    meetingBox.appendChild(
-                        document.createElement("hr")
-                    );
-
-                    meetingNotesBox.appendChild(
-                        meetingBox
-                    );
-                }
-            );
-
-            meetingNotesBox.style.display =
-                "block";
-
-        } catch (error) {
-
-            console.error(
-                "Meeting notes error:",
-                error
-            );
-
-            meetingNotesBox.textContent =
-                error.message;
-
-            meetingNotesBox.style.display =
-                "block";
-        }
-    }
-);
-
-showMeetingSummary.addEventListener(
-    "click",
-    async function () {
-
-        try {
-
-            const meetings =
-                await getAccessibleMeetings();
-
-            meetingSummaryBox.innerHTML = "";
-
-            if (meetings.length === 0) {
-                meetingSummaryBox.textContent =
-                    "No published meeting summaries available.";
-
-                meetingSummaryBox.style.display =
-                    "block";
-
-                return;
-            }
-
-            meetings.forEach(
-                function (meeting) {
-
-                    const meetingBox =
-                        document.createElement("div");
-
-                    const title =
-                        document.createElement("h3");
-
-                    title.textContent =
-                        meeting.title +
-                        " (Meeting ID: " +
-                        meeting.id +
-                        ")";
-
-                    const summary =
-                        document.createElement("p");
-
-                    summary.textContent =
-                        meeting.ai_summary ||
-                        "No summary available.";
-
-                    meetingBox.appendChild(title);
-                    meetingBox.appendChild(summary);
-
-                    meetingBox.appendChild(
-                        document.createElement("hr")
-                    );
-
-                    meetingSummaryBox.appendChild(
-                        meetingBox
-                    );
-                }
-            );
-
-            meetingSummaryBox.style.display =
-                "block";
-
-        } catch (error) {
-
-            meetingSummaryBox.textContent =
-                error.message;
-
-            meetingSummaryBox.style.display =
-                "block";
-        }
-    }
-);
-
-
-showMeetingSummary.addEventListener(
-    "click",
-    async function () {
-
-        try {
-
-            const meetings =
-                await getAccessibleMeetings();
-
-            meetingSummaryBox.innerHTML = "";
-
-            if (meetings.length === 0) {
-                meetingSummaryBox.textContent =
-                    "No published meeting summaries available.";
-
-                meetingSummaryBox.style.display =
-                    "block";
-
-                return;
-            }
-
-            meetings.forEach(
-                function (meeting) {
-
-                    const meetingBox =
-                        document.createElement("div");
-
-                    const title =
-                        document.createElement("h3");
-
-                    title.textContent =
-                        meeting.title +
-                        " (Meeting ID: " +
-                        meeting.id +
-                        ")";
-
-                    const summary =
-                        document.createElement("p");
-
-                    summary.textContent =
-                        meeting.ai_summary ||
-                        "No summary available.";
-
-                    meetingBox.appendChild(title);
-                    meetingBox.appendChild(summary);
-
-                    meetingBox.appendChild(
-                        document.createElement("hr")
-                    );
-
-                    meetingSummaryBox.appendChild(
-                        meetingBox
-                    );
-                }
-            );
-
-            meetingSummaryBox.style.display =
-                "block";
-
-        } catch (error) {
-
-            meetingSummaryBox.textContent =
-                error.message;
-
-            meetingSummaryBox.style.display =
-                "block";
-        }
-    }
-);
-
-showDecisions.addEventListener(
-    "click",
-    async function () {
-
-        try {
-
-            const meetings =
-                await getAccessibleMeetings();
-
-            decisionsBox.innerHTML = "";
-
-            if (meetings.length === 0) {
-
-                decisionsBox.textContent =
-                    "No published meeting decisions available.";
-
-                decisionsBox.style.display =
-                    "block";
-
-                return;
-            }
-
-            meetings.forEach(
-                function (meeting) {
-
-                    const meetingBox =
-                        document.createElement("div");
-
-                    const title =
-                        document.createElement("h3");
-
-                    title.textContent =
-                        meeting.title +
-                        " (Meeting ID: " +
-                        meeting.id +
-                        ")";
-
-                    meetingBox.appendChild(title);
-
-                    if (
-                        meeting.decisions &&
-                        meeting.decisions.length > 0
-                    ) {
-
-                        meeting.decisions.forEach(
-                            function (decision) {
-
-                                const item =
-                                    document.createElement("p");
-
-                                item.textContent =
-                                    "• " +
-                                    decision.decision_text;
-
-                                meetingBox.appendChild(
-                                    item
-                                );
-                            }
-                        );
-
-                    } else {
-
-                        const noDecision =
-                            document.createElement("p");
-
-                        noDecision.textContent =
-                            "No decisions available.";
-
-                        meetingBox.appendChild(
-                            noDecision
-                        );
-                    }
-
-                    meetingBox.appendChild(
-                        document.createElement("hr")
-                    );
-
-                    decisionsBox.appendChild(
-                        meetingBox
-                    );
-                }
-            );
-
-            decisionsBox.style.display =
-                "block";
-
-        } catch (error) {
-
-            decisionsBox.textContent =
-                error.message;
-
-            decisionsBox.style.display =
-                "block";
-        }
-    }
-);
 
 showTaskHistory.addEventListener(
     "click",
@@ -1034,6 +1285,8 @@ async function startEmployeeDashboard() {
     await loadTasks();
 
     await loadEmployeeAnalytics();
+
+    await loadEmployeeMeetings();
 }
 
 startEmployeeDashboard();

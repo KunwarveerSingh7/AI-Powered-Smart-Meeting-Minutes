@@ -1,6 +1,30 @@
+//Source 1
+//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function...
+//Source 2
+//https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
+//Source 3
+//https://javascript.info/json
+//Source 4
+//https://dev.to/cscarpitta/build-a-simple-pie-chart-with-html-and-css-32dn
+//Source 5
+//https://www.geeksforgeeks.org/html/how-to-use-dom-and-events/
+//Source 6
+//https://javascript.info/async-await
+
+//file structure
+//async functions in ordeer
+//checkEmployee()
+//loadTasks()
+//getAccessibleMeetings()
+//LoadCompletdTasks()
+//updateTaskPorgress()
+//LoadEmployee Analytics()
+//LoadEmployeeMeetings()
+// LoadTaskHistory()
+//startEmployeeDashboard()
+
+
 const token = localStorage.getItem("access_token");
-
-
 
 async function checkEmployee() {
     if (!token) {
@@ -878,9 +902,7 @@ async function loadEmployeeMeetings() {
                 "Extracted Meeting Notes";
 
 
-            // -----------------------------------
-            // Summary popup
-            // -----------------------------------
+            // summary popup
 
             summaryButton.onclick =
                 function () {
@@ -903,9 +925,7 @@ async function loadEmployeeMeetings() {
                 };
 
 
-            // -----------------------------------
-            // Decisions popup
-            // -----------------------------------
+            // decisons popup
 
             decisionsButton.onclick =
                 function () {
@@ -946,9 +966,7 @@ async function loadEmployeeMeetings() {
                 };
 
 
-            // -----------------------------------
-            // Extracted notes popup
-            // -----------------------------------
+            // extracted notes popuop
 
             notesButton.onclick =
                 function () {

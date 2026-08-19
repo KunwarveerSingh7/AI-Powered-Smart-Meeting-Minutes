@@ -2,6 +2,18 @@
 # Option 1: Only managers can create employee accounts.
 # Option 2: Allow employees to sign up for their own accounts.
 
+
+#Sources
+#Source 1: https://fastapi.tiangolo.com/tutorial/first-steps/
+#Source 2: https://docs.sqlalchemy.org/en/21/orm/session_basics.html#framing-out-a-begin-commit-rollback-block
+#Source 3: https://fastapi.tiangolo.com/tutorial/request-forms-and-files/
+#Source 4: https://fastapi.tiangolo.com/advanced/templates/
+#Source 5: https://github.com/pydantic/pydantic/blob/main/docs/concepts/models.md
+#Source 6: https://fastapi.tiangolo.com/tutorial/request-forms/
+#Source 7: https://docs.sqlalchemy.org/en/20/orm/session_basics.html
+
+
+
 from pathlib import Path
 from typing import List
  
@@ -87,9 +99,7 @@ def read_root():
     return {"message": "Backend is running"}
  
  
-# ---------------------------------------------------------------------------
-# Authentication
-# ---------------------------------------------------------------------------
+# authentication
  
 @app.post("/register", response_model=schemas.UserOut)
 def register_user(
@@ -245,9 +255,7 @@ def get_employees(
     return employees
  
  
-# ---------------------------------------------------------------------------
-# Task helpers
-# ---------------------------------------------------------------------------
+# task helpers
  
 def _get_database_user(
     db: Session,
@@ -343,9 +351,7 @@ def _task_to_response(task: models.Task) -> dict:
     }
  
  
-# ---------------------------------------------------------------------------
-# Meeting upload
-# ---------------------------------------------------------------------------
+# meeting upload
  
 UPLOAD_FOLDER = Path("../upload")
  
@@ -632,9 +638,7 @@ def update_decision(
     }
 
 
-# ---------------------------------------------------------------
-# Publish reviewed meeting
-# ---------------------------------------------------------------
+# publish review meeting
 
 @app.put("/meetings/{meeting_id}/publish")
 def publish_meeting(
@@ -848,9 +852,7 @@ def get_manager_analytics(
         .count()
     )
 
-    # -------------------------
-    # Task statistics
-    # -------------------------
+    # task statisitcs
 
     total_tasks = (
         db.query(models.Task)
@@ -901,9 +903,7 @@ def get_manager_analytics(
         .count()
     )
 
-    # -------------------------
-    # Completion percentage
-    # -------------------------
+    # completion percentage
 
     completion_percentage = 0
 
@@ -1020,9 +1020,7 @@ def get_manager_team_analytics(
         })
 
 
-    # -------------------------
-    # Tasks by priority
-    # -------------------------
+    # prioty if taskd
 
     high_priority = (
         db.query(models.Task)
@@ -1049,9 +1047,7 @@ def get_manager_team_analytics(
     )
 
 
-    # -------------------------
-    # Most completed tasks
-    # -------------------------
+    # most completed tasks
 
     top_employee = None
 
@@ -1167,9 +1163,7 @@ def get_employee_analytics(
         "completion_percentage":
             completion_percentage,
     }
-# ---------------------------------------------------------------
-# Employee access to published meeting
-# ---------------------------------------------------------------
+# employee access to the published meetings
 
 @app.get("/employee/meetings/{meeting_id}")
 def get_employee_meeting(
@@ -1249,9 +1243,7 @@ def get_employee_meeting(
     }
  
  
-# ---------------------------------------------------------------------------
-# Meeting Processing
-# ---------------------------------------------------------------------------
+# meeting processing
 
 
 @app.post("/meetings/{meeting_id}/analyse")
@@ -1294,14 +1286,10 @@ def analyse_meeting_route(
             detail="Ollama is not running"
         )
 
-    # ---------------------------------------------------------------
-    # Run AI analysis
-    # ---------------------------------------------------------------
-
+    # run ai anlyiss
     try:
         # Send the extracted meeting text to our AI service.
-        # The result contains:
-        # summary, decisions, action_items and flags.
+        
         result = analyse_meeting(meeting.raw_text)
 
     except (RuntimeError, ValueError) as error:
@@ -1311,13 +1299,9 @@ def analyse_meeting_route(
         ) from error
 
 
-    # ---------------------------------------------------------------
-    # Find the manager in the database
-    # ---------------------------------------------------------------
+    # find manageer ind atabase
 
     # Tasks require a created_by user ID.
-    # The JWT contains the manager's email, so use that email
-    # to find the corresponding User database record.
     manager = (
         db.query(models.User)
         .filter(
@@ -1333,25 +1317,17 @@ def analyse_meeting_route(
         )
 
 
-    # ---------------------------------------------------------------
-    # Remove previous AI results
-    # ---------------------------------------------------------------
+    # remove previous ai results
 
-    # The manager may run the analysis more than once while the
-    # meeting is still being reviewed.
-    #
-    # Delete the previous decisions and tasks for this meeting
-    # before storing the newly generated results. This prevents
-    # duplicate records.
+    # manager can cluck analysis more thghan once
+    #prevent duplicate recssords
 
     db.query(models.Decision).filter(
         models.Decision.meeting_id == meeting.id
     ).delete()
 
     # Get previous tasks for this meeting.
-    # Delete them through SQLAlchemy instead of using bulk delete.
-    # This allows the Task model's cascade relationships to remove
-    # task assignments and task updates safely first.
+    
     existing_tasks = (
     db.query(models.Task)
     .filter(models.Task.meeting_id == meeting.id)
@@ -1362,18 +1338,13 @@ def analyse_meeting_route(
         db.delete(existing_task)
 
 
-    # ---------------------------------------------------------------
-    # Save AI summary
-    # ---------------------------------------------------------------
+    # save ai summary
 
     # ai_summary already exists as a column in the Meeting model.
     meeting.ai_summary = result.get("summary")
 
 
-    # ---------------------------------------------------------------
-    # Save AI decisions
-    # ---------------------------------------------------------------
-
+    # save ai decision
     for decision_text in result.get("decisions", []):
 
         # Ignore null or empty decisions.
@@ -1388,9 +1359,7 @@ def analyse_meeting_route(
         db.add(decision)
 
 
-    # ---------------------------------------------------------------
-    # Save AI action items as tasks
-    # ---------------------------------------------------------------
+    # save ai tasks
 
     for item in result.get("action_items", []):
 
@@ -1401,12 +1370,10 @@ def analyse_meeting_route(
             continue
 
 
-        # -----------------------------------------------------------
-        # Convert AI deadline
-        # -----------------------------------------------------------
+        # convert ai deadline
 
         # Llama returns deadlines as YYYY-MM-DD strings.
-        # SQLAlchemy expects a Python datetime for due_date.
+      
         due_date = None
 
         deadline = item.get("deadline")
@@ -1423,15 +1390,11 @@ def analyse_meeting_route(
                 due_date = None
 
 
-        # -----------------------------------------------------------
-        # Preserve AI assignee and notes
-        # -----------------------------------------------------------
+        # preserve ai assigne and note
 
         description_parts = []
 
-        # We are NOT automatically assigning an employee account yet.
-        # The AI gives us a person's name, while the database assignment
-        # system uses user IDs. The manager will confirm this later.
+        # manager confirms lter
         if item.get("assignee"):
             description_parts.append(
                 "AI extracted assignee: "
@@ -1450,9 +1413,7 @@ def analyse_meeting_route(
         )
 
 
-        # -----------------------------------------------------------
-        # Create database Task
-        # -----------------------------------------------------------
+        # create database task
 
         new_task = models.Task(
             meeting_id=meeting.id,
@@ -1467,9 +1428,7 @@ def analyse_meeting_route(
         db.add(new_task)
 
 
-    # ---------------------------------------------------------------
-    # Commit all AI results
-    # ---------------------------------------------------------------
+    # commit all ai results
 
     try:
         db.commit()
@@ -1477,11 +1436,11 @@ def analyse_meeting_route(
 
     except Exception as error:
 
-        # Undo the database transaction if saving failed.
+     
         db.rollback()
 
         # TEMPORARY DEBUGGING:
-        # Print the actual database error in the terminal.
+     
         print("DATABASE SAVE ERROR:", repr(error))
 
         raise HTTPException(
@@ -1490,9 +1449,7 @@ def analyse_meeting_route(
         ) from error
 
 
-    # ---------------------------------------------------------------
-    # Return successful result
-    # ---------------------------------------------------------------
+    # return successful results
 
     return {
         "message": "Meeting analysed and AI results saved successfully",
@@ -1501,10 +1458,7 @@ def analyse_meeting_route(
     }
 
 
-# ---------------------------------------------------------------------------
-# Tasks
-# ---------------------------------------------------------------------------
- 
+# tasks
 @app.post(
     "/tasks",
     response_model=schemas.TaskOut,
@@ -1775,9 +1729,7 @@ def update_task(
         None,
     )
 
-    # -----------------------------------------------------------
-    # Find current/latest task progress
-    # -----------------------------------------------------------
+    # find latest t6ask progress
 
     latest_update = (
         db.query(models.TaskUpdate)
@@ -1802,9 +1754,7 @@ def update_task(
         task.status,
     )
 
-    # -----------------------------------------------------------
-    # Employee permissions and progress rules
-    # -----------------------------------------------------------
+    # employee permissions and prohgress rules
 
     if user.role != "manager":
 
@@ -1859,9 +1809,7 @@ def update_task(
                 ),
             )
 
-    # -----------------------------------------------------------
-    # Progress rules
-    # -----------------------------------------------------------
+    # progrress rule
 
     # Completed always means 100%.
     if requested_status == "completed":
@@ -1874,9 +1822,7 @@ def update_task(
         else current_progress
     )
 
-    # -----------------------------------------------------------
-    # Manager assignment changes
-    # -----------------------------------------------------------
+    # manager assistance changes
 
     if (
         user.role == "manager"
@@ -1900,9 +1846,7 @@ def update_task(
             for user_id in validated_ids
         ]
 
-    # -----------------------------------------------------------
-    # Apply normal task field updates
-    # -----------------------------------------------------------
+    # apply normal task field updates
 
     for field, value in update_data.items():
 
@@ -1921,9 +1865,7 @@ def update_task(
 
         setattr(task, field, value)
 
-    # -----------------------------------------------------------
-    # Save task update history
-    # -----------------------------------------------------------
+    # save task update hisotry
 
     if (
         "status" in fields_requested
@@ -1940,9 +1882,7 @@ def update_task(
             )
         )
 
-    # -----------------------------------------------------------
-    # Commit changes
-    # -----------------------------------------------------------
+    # commit changes
 
     try:
         db.commit()
@@ -1985,4 +1925,36 @@ def delete_task(
         ) from exc
  
     return {"message": "Task deleted"}
- 
+
+
+
+ #API endpoints
+ # get - login page
+ # get - manager dashboard
+ # get - employee dashboard
+ # get - meeting review
+ # get - /
+ # post - register
+ # post - login
+ # get - me
+ # post - employees
+ # get - employees
+ #post - meeting upload
+ # get - meeting id
+ #put - meeting summary
+ # put decision id
+ # put - meeting publish
+ # get - manager meetings
+ # get - employeee meetings
+ # get - employee meetind id
+ # post - meetng analysidf
+ # get - manager analytics
+ # get - employees analtycis
+ # get - team analytics
+ # post - task
+ # get - task
+ # get - task hisotry
+ # get - task id
+ # get - task updates
+ # put - taks id
+ # delete - task id

@@ -1,3 +1,29 @@
+<!-- employee dashboard structure
+1. header (w logout)
+2. personal info of employees
+3. persoanl analytics
+4. my tasks
+5. meeting information
+6. task hisotry
+7. logout button
+
+
+-->
+
+<!--source 1
+https://www.geeksforgeeks.org/html/html5-semantics/
+organise page into various sections
+-->
+<!--source 2
+https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/section
+divisions of the contents into sections
+-->
+
+<!--source 3: https://www.w3schools.com/html/html_id.asp
+use of html id attributes for js file-->
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,9 +31,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- the dashboard doesnt need to have the add meeting minutes option. that would be exclusive to the employee -->
+    <!-- the dashboard doesnt need to have the add meeting minutes option. that would be exclusive to the manager -->
     <title>Employee Dashboard</title>
-
+    <!--css fiel for styling-->
     <link rel="stylesheet"
     href="/static/style.css">
 </head>
@@ -15,92 +41,65 @@
     <body>
 
         <div class="dashboard-page">
-
+            <!--header w app logo and logout button-->
             <header class="dashboard-header">
 
                 <div class="dashboard-brand">
-
+                <!--app logo-->
                 <img src="/static/images/logo.png"
                 alt="Smart Meeting Minutes Logo"
                 class="dashboard-logo">
 
                 <div>
-
                     <h1> Employee Portal</h1>
                 </div>
 
-                </div>
-
-                <button type="button"
-                class="logout-button"
-                onclick="logout()">
-                Logout
-                </button>
+            </div>
+                <!--another logout button at the bottom-->
+                <button type="button" class="logout-button" onclick="logout()">Logout </button>
 
             </header>
 
 
             <main class="dashboard-content">
-
+            <!--section1: employees personal information-->
             <section class="dashboard-section">
 
             <div class="section-heading">
-
                 <div>
                     <h2>
                         Personal Details
                     </h2>
-
                     <p>
                         Your employee profile information.
                     </p>
                 </div>
 
             </div>
-
-
+            <!--employee info loaded with javascript-->
             <div class="employee-profile-card">
 
                 <div>
-                    <span class="profile-label">
-                        Name
-                    </span>
+                    <span class="profile-label">Name</span>
 
-                    <strong id="employeeProfileName">
-                        Loading...
-                    </strong>
+                    <strong id="employeeProfileName">Loading...</strong>
                 </div>
 
-
                 <div>
-                    <span class="profile-label">
-                        Position
-                    </span>
-
-                    <strong id="employeeProfilePosition">
-                        Loading...
-                    </strong>
+                    <span class="profile-label">Position</span>
+                    <strong id="employeeProfilePosition">Loading...</strong>
                 </div>
 
-
                 <div>
-                    <span class="profile-label">
-                        Email
-                    </span>
-
-                    <strong id="employeeProfileEmail">
-                        Loading...
-                    </strong>
+                    <span class="profile-label">Email </span>
+                    <strong id="employeeProfileEmail">Loading...</strong>
                 </div>
 
             </div>
 
 
-            <!-- Keep this because your current JS uses it -->
-            <p
-                id="welcome_message"
-                style="display: none;"
-            >
+            <!-- keep this as still being used by the js file -->
+            <p id="welcome_message" style="display: none;">
                 Welcome
             </p>
 
@@ -108,35 +107,23 @@
 
 
 
-        <!-- ======================================
-             MY ANALYTICS
-        ======================================= -->
-
+        <!-- section 2: task analytics of the employees-->
             <section class="dashboard-section">
 
                 <div class="section-heading">
 
                     <div>
-                        <h2>
-                        My Analytics
-                        </h2>
-
-                        <p>
-                        Overview of your assigned task progress.
-                        </p>
+                        <h2>My Analytics</h2>
+                        <p>Overview of your assigned task progress.</p>
                     </div>
 
                 </div>
 
-
-                <div
-                    id="employeeAnalytics"
-                    class="analytics-grid"
-            >
+                <!--value inside these cards updated with javascript-->
+                <div id="employeeAnalytics" class="analytics-grid">
 
                     <div class="analytics-card">
                         <span id="employeeTotalTasks">0</span>
-
                         <strong>
                         Total Assigned Tasks
                         </strong>
@@ -145,21 +132,14 @@
 
                 <div class="analytics-card">
                     <span id="employeePendingTasks">0</span>
-
-                    <strong>
-                        Pending
-                    </strong>
+                    <strong>Pending</strong>
                 </div>
-
 
                 <div class="analytics-card">
                     <span id="employeeInProgressTasks">0</span>
 
-                    <strong>
-                        In Progress
-                    </strong>
+                    <strong>In Progress</strong>
                 </div>
-
 
                 <div class="analytics-card">
                     <span id="employeeCompletedTasks">0</span>
@@ -172,218 +152,138 @@
 
                 <div class="analytics-card">
                     <span id="employeeOverdueTasks">0</span>
-
-                    <strong>
-                        Overdue
+                    <strong>Overdue
                     </strong>
                 </div>
 
 
                 <div class="analytics-card">
                     <span id="employeeCompletionPercentage">0%</span>
-
-                    <strong>
-                        Completion
-                    </strong>
+                    <strong>Completion</strong>
                 </div>
 
                 </div>
 
-
-                <div
-                id="employeeChartArea"
-                class="chart-area"
-                >
+                <!--chart can be added here using the js file-->
+                <div id="employeeChartArea"  class="chart-area">
                 </div>
 
             </section>
 
 
 
-        <!-- ======================================
-             MY TASKS
-        ======================================= -->
+        <!-- section3:active tasks assigned to the employees-->
 
             <section class="dashboard-section">
 
                 <div class="section-heading">
 
                     <div>
-                    <h2>
-                        My Tasks
-                    </h2>
-
-                    <p>
-                        View and update your active assigned tasks.
-                    </p>
+                    <h2>My Tasks</h2>
+                    <p>View and update your active assigned tasks.</p>
                     </div>
 
-
-                    <button
-                    type="button"
-                    id="refreshTasks"
-                    class="secondary-action"
-                    >
+                    <!--reload the employeee tasks list-->
+                    <button type="button" id="refreshTasks"  class="secondary-action">
                     Refresh Tasks
                     </button>
 
                 </div>
 
-
+                <!--task cards added here from javascript-->
                 <div class="employee-task-scroll">
-
-                    <div
-                    id="taskList"
-                    class="employee-task-columns"
-                    >
-                    Loading tasks...
-                    </div>
-
+                    <div id="taskList" class="employee-task-columns" >
+                    Loading tasks... </div>
                 </div>
 
             </section>
 
-
-
-        <!-- ======================================
-             MEETING INFORMATION
-        ======================================= -->
+        <!-- section4: published meeting information -->
 
             <section class="dashboard-section">
 
                 <div class="section-heading">
 
                     <div>
-                    <h2>
-                        Meeting Information
+                    <h2>Meeting Information
                     </h2>
-
-                    <p>
-                        View published meeting summaries, decisions and notes.
+                    <p>View published meeting summaries, decisions and notes.
                     </p>
                     </div>
 
                 </div>
 
-
-                <div
-                id="employeeMeetingList"
-                class="employee-meeting-list"
-                >
-                Loading meetings...
+                <!--published meetings available to employees appear here-->
+                <div id="employeeMeetingList" class="employee-meeting-list"
+                >Loading meetings...
                 </div>
 
 
             <!-- Keep old IDs temporarily because current JS uses them -->
-                <div
-                id="meetingSummaryBox"
-                style="display: none;"
-                >
+             <!--to be remvoed when js is updated-->
+                <div id="meetingSummaryBox" style="display: none;">
                 </div>
 
-                <div
-                id="decisionsBox"
-                style="display: none;"
-                >
+                <div id="decisionsBox" style="display: none;">
                 </div>
 
-                <div
-                id="meetingNotesBox"
-                style="display: none;"
-                >
+                <div id="meetingNotesBox" style="display: none;">
                 </div>
 
 
-            <!-- Old buttons temporarily hidden -->
-                <button
-                type="button"
-                id="showMeetingSummary"
-                style="display: none;"
-                >
-                Meeting Summary
+            <!-- kept for js compatibility -->
+             <!--TODO-->
+                <button type="button" id="showMeetingSummary" style="display: none;">Meeting Summary
                 </button>
 
-                <button
-                type="button"
-                id="showDecisions"
-                style="display: none;"
-                >
+                <button type="button" id="showDecisions" style="display: none;">
                 Decisions
                 </button>
 
-                <button
-                type="button"
-                id="showMeetingNotes"
-                style="display: none;"
-                >
-                Extracted Meeting Notes
-                </button>
+                <button type="button" id="showMeetingNotes" style="display: none;"> Extracted Meeting Notes</button>
 
             </section>
 
-
-
-        <!-- ======================================
-             TASK HISTORY
-        ======================================= -->
+        <!-- section 5: task hisotry-->
 
             <section class="dashboard-section">
 
                 <div class="section-heading">
 
                 <div>
-                    <h2>
-                        Task History
-                    </h2>
-
-                    <p>
-                        View your completed tasks.
-                    </p>
+                    <h2>Task History</h2>
+                    <p>View your completed tasks.</p>
                 </div>
 
-
-                <button
-                    type="button"
-                    id="showTaskHistory"
-                    class="secondary-action"
-                >
+                <!--show or hide the task hisotry-->
+                <button type="button" id="showTaskHistory" class="secondary-action">
                     Task History
                 </button>
 
                 </div>
 
-
-                <div
-                id="taskHistoryList"
-                class="task-history-list"
-                style="display: none;"
-                >
+                <!--complted tasks loaded here upon request-->
+                <div id="taskHistoryList" class="task-history-list"style="display: none;">
                 </div>
 
             </section>
 
 
 
-        <!-- ======================================
-             BOTTOM LOGOUT
-        ======================================= -->
-
+        <!-- bottom logout button -->
             <section class="dashboard-footer">
 
-                <button
-                type="button"
-                class="logout-button"
-                onclick="logout()"
-                >
+                <button type="button" class="logout-button" onclick="logout()">
                 Logout
                 </button>
 
             </section>
 
-            </main>
+        </main>
 
         </div>
 
+        <!--javascript file that handles all the functionality-->
         <script src="/static/employee_dashboard.js"></script>
 
 

@@ -1,5 +1,38 @@
+//Source 1
+//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function...
+//Source 2
+//https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
+//Source 3
+//https://javascript.info/json
+//Source 4
+//https://dev.to/cscarpitta/build-a-simple-pie-chart-with-html-and-css-32dn
+//Source 5
+//https://www.geeksforgeeks.org/html/how-to-use-dom-and-events/
+//Source 6
+//https://javascript.info/async-await
+//Source 7
 // hhttps://github.com/fastapi/full-stack-fastapi-template
-// source for the idea of this code
+// Source 8
+//https://www.w3schools.com/js/js_htmldom_methods.asp
+//Source 9
+// https://auth0.com/docs/secure/security-guidance/data-security/token-storage
+
+
+//file strcutre
+//async functions in rodeer
+//checkManager()
+//loadEmployeees()
+//loadTeamAnalytics()
+// loadManagerAnalytics()
+//loadMeetingReview()
+//loadTask Employees()
+//saveSummary()
+//publisHmeeting()
+//saveDecision()
+//saveTask()
+//deleteTask()
+// analyseMeeting()
+
 
 
 const token = localStorage.getItem("access_token");
@@ -66,7 +99,7 @@ function logout() {
 checkManager();
 
 // this would grab all the lements needed from the manager dahboard
-// ids have been matched with manager_dashboard.html
+// ids have been matcheed with manager_dashboard.html
 const showEmployeeForm = document.getElementById("showEmployeeForm");
 const employeeFormContainer = document.getElementById("employeeFormContainer");
 const employeeForm = document.getElementById("employeeForm");
@@ -89,7 +122,7 @@ const teamAnalyticsContainer =
 
 
 // This button just shows the employee creation form.
-// this form would be hidden. only shown once clicked. to keep manager dashboard cleaner
+// this form would be hiden. only shown once clicked. to keep manager dashboard cleaner
 showEmployeeForm.addEventListener("click", function () {
 
     if (employeeFormContainer.style.display === "none") {
@@ -294,9 +327,7 @@ function renderManagerCharts(data) {
     chartArea.innerHTML = "";
 
 
-    // -----------------------------------------
-    // TASK STATUS DONUT
-    // -----------------------------------------
+    // task status donut
 
     const taskChartCard =
         document.createElement("div");
@@ -463,9 +494,7 @@ function renderManagerCharts(data) {
 
 
 
-    // -----------------------------------------
-    // MEETING STATUS CHART
-    // -----------------------------------------
+    // meeting status chart
 
     const meetingChartCard =
         document.createElement("div");
@@ -974,9 +1003,7 @@ async function loadManagerMeetings() {
         "primary-action";
 
 
-    // -------------------------------------------------
-    // INFO MODAL
-    // -------------------------------------------------
+    // info modal
 
     infoButton.onclick = function () {
 
@@ -1026,9 +1053,7 @@ async function loadManagerMeetings() {
     };
 
 
-    // -------------------------------------------------
-    // DETAILS MODAL
-    // -------------------------------------------------
+    // details modal
 
     detailsButton.onclick = function () {
 
@@ -1081,9 +1106,7 @@ ${meeting.raw_text || "No extracted text available."}
     };
 
 
-    // -------------------------------------------------
-    // OPEN REVIEW
-    // -------------------------------------------------
+    // open review
 
     reviewButton.onclick = function () {
 

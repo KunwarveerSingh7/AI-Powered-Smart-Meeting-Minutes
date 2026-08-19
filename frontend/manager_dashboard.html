@@ -1,3 +1,29 @@
+<!--manager dashbaord structure
+1. header (w logout)
+2. manager details
+2. team management (add employee, team list)
+3. upload meeting
+4. meeting hisotry cards
+5. manager analytics
+6. employee analytics
+7. logout button
+
+
+-->
+
+<!--source 1: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/file
+restricitng using accept
+-->
+<!--source 2: https://www.w3schools.com/html/html_forms.asp
+html forms-->
+ <!-- Source 3
+ https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input
+ connecting labels with inputs 
+ -->
+
+
+
+
 <!Doctype html>
 <html lang="en">
   <head>
@@ -6,46 +32,33 @@
 
     <title> Manager Dashboard</title>
 
+    <!-- css file for styling-->
     <link rel="stylesheet" href="/static/style.css">
   </head>
   <body>
     <div class="dashboard-page">
 
-        <!-- _______________________________________________________________
-         Header Section with logo and logout button
-         _______________________________________________________________ -->
+        <!--section1: header w logo and logout -->
 
          <header class="dashboard-header">
 
             <div class="dashboard-brand">
-
-            <img
-                src="/static/images/logo.png"
-                alt="Smart Meeting Minutes logo"
-                class="app-logo"
-            >
-
+            <!---->
+            <img src="/static/images/logo.png" alt="Smart Meeting Minutes logo" class="app-logo">
             <div>
 
-            <h1>
-                Manager Portal
-            </h1>
-
+            <h1>Manager Portal</h1>
             </div>
-
             </div>
-
-            <button type="button"
-             class="logout-button"
-              onclick="logout()">
+            <!-- logout button-->
+            <button type="button" class="logout-button" onclick="logout()">
                 Logout
             </button>
 
         </header>
 
 
-     <!-- MANAGER INFORMATION
-        ====================================================== -->
+     <!-- section 2: manager information -->
 
         <main class="dashboard-content">
 
@@ -53,30 +66,19 @@
 
             
 
-                <p id="welcome_message">
-                    Logged in as:
-                </p>
-
+                <p id="welcome_message"> Logged in as: </p>
             </section>
 
-
-
-            <!-- =================================================
-                 TEAM MANAGEMENT
-            ================================================== -->
+            <!--section 3: team management -->
 
             <section class="dashboard-section">
 
                 <div class="section-heading">
 
                     <div>
-                        <h2>
-                            Team Management
+                        <h2>Team Management
                         </h2>
-
-                        <p>
-                            Create and manage employee accounts.
-                        </p>
+                        <p>Create and manage employee accounts.</p>
                     </div>
 
                 </div>
@@ -84,172 +86,92 @@
 
                 <div class="section-actions">
 
-                    <button
-                        type="button"
-                        id="showEmployeeForm"
-                        class="primary-action"
-                    >
-                        Add New Employee
+                    <button type="button" id="showEmployeeForm"class="primary-action"
+                    >Add New Employee
                     </button>
 
 
-                    <button
-                        type="button"
-                        id="refreshEmployees"
-                        class="secondary-action"
-                    >
-                        Employee List
-                    </button>
+                    <button type="button" id="refreshEmployees" class="secondary-action"> Employee List</button>
 
                 </div>
 
 
 
                 <!-- Employee creation form -->
+                <!--hidden until add new employee button is pressed-->
+                <div id="employeeFormContainer" class="dropdown-panel" style="display: none;">
 
-                <div
-                    id="employeeFormContainer"
-                    class="dropdown-panel"
-                    style="display: none;"
-                >
-
-                    <h3>
-                        Add Employee
-                    </h3>
-
+                    <h3> Add Employee </h3>
 
                     <form id="employeeForm">
 
                         <div class="form-group">
 
-                            <label for="employeeName">
-                                Name
-                            </label>
-
-                            <input
-                                type="text"
-                                id="employeeName"
-                                required
-                            >
-
+                            <label for="employeeName">Name</label>
+                            <input type="text" id="employeeName" required>
                         </div>
 
 
                         <div class="form-group">
 
-                            <label for="employeeEmail">
-                                Email
-                            </label>
+                            <label for="employeeEmail">Email</label>
 
-                            <input
-                                type="email"
-                                id="employeeEmail"
-                                required
-                            >
-
+                            <input type="email" id="employeeEmail" required>
                         </div>
 
 
                         <div class="form-group">
 
-                            <label for="employeePassword">
-                                Temporary Password
-                            </label>
-
-                            <input
-                                type="password"
-                                id="employeePassword"
-                                required
-                            >
-
+                            <label for="employeePassword">Temporary Password</label>
+                            <input type="password" id="employeePassword" required>
                         </div>
 
 
                         <div class="form-group">
 
-                            <label for="employeePosition">
-                                Position
-                            </label>
+                            <label for="employeePosition">Position</label>
 
-                            <input
-                                type="text"
-                                id="employeePosition"
-                                required
-                            >
-
+                            <input type="text" id="employeePosition" required>
                         </div>
 
 
-                        <button
-                            type="submit"
-                            class="primary-action"
-                        >
-                            Add Employee
-                        </button>
-
+                        <button type="submit" class="primary-action">Add Employee</button>
                     </form>
 
-
                     <p id="employeeMessage"></p>
-
                 </div>
-
-
 
                 <!-- Employee list -->
 
-                <div
-                    id="employeeListContainer"
+                <div id="employeeListContainer"
                     class="dropdown-panel"
                     style="display: none;"
                 >
 
-                    <h3>
-                        Employees
-                    </h3>
-
-                    <div id="employeeList">
-                        No employees found.
-                    </div>
-
+                    <h3> Employees</h3>
+                    <!--employee account created by manager showed here-->
+                    <div id="employeeList">No employees found.</div>
                 </div>
 
             </section>
 
 
 
-            <!-- =================================================
-                 MEETING MINUTES
-            ================================================== -->
+            <!-- section4 : meeting minutes upload -->
 
             <section class="dashboard-section">
-
                 <div class="section-heading">
 
                     <div>
+                        <h2>Meeting Minutes</h2>
 
-                        <h2>
-                            Meeting Minutes
-                        </h2>
-
-                        <p>
-                            Upload meeting files for AI processing.
-                        </p>
-
+                        <p>Upload meeting files for AI processing.</p>
                     </div>
 
                 </div>
 
 
-                <button
-                    type="button"
-                    id="showMeetingForm"
-                    class="primary-action"
-                >
-                    Upload Meeting Minutes
-                </button>
-
-
+                <button type="button" id="showMeetingForm" class="primary-action">Upload Meeting Minutes</button>
 
                 <!-- Meeting upload form -->
 
@@ -259,67 +181,39 @@
                     style="display: none;"
                 >
 
-                    <h3>
-                        Upload Meeting
+                    <h3>Upload Meeting
                     </h3>
 
 
                     <form id="meetingUploadForm">
 
-
                         <div class="form-group">
 
-                            <label for="meetingTitle">
-                                Meeting Title
-                            </label>
+                            <label for="meetingTitle">Meeting Title</label>
 
-                            <input
-                                type="text"
-                                id="meetingTitle"
-                                required
-                            >
+                            <input type="text" id="meetingTitle" required>
 
                         </div>
 
 
                         <div class="form-group">
 
-                            <label for="meetingDate">
-                                Meeting Date
-                            </label>
-
-                            <input
-                                type="date"
-                                id="meetingDate"
-                                required
-                            >
+                            <label for="meetingDate">Meeting Date</label>
+                            <input type="date" id="meetingDate" required>
 
                         </div>
 
 
                         <div class="form-group">
 
-                            <label for="meetingFile">
-                                Meeting File
-                            </label>
-
-                            <input
-                                type="file"
-                                id="meetingFile"
-                                accept=".pdf,.docx,.txt"
-                                required
-                            >
+                            <label for="meetingFile">Meeting File</label>
+                            <!--docx/pdf/txt format supported only-->
+                            <input type="file" id="meetingFile" accept=".pdf,.docx,.txt" required>
 
                         </div>
 
 
-                        <button
-                            type="submit"
-                            class="primary-action"
-                        >
-                            Upload Meeting
-                        </button>
-
+                        <button type="submit" class="primary-action">Upload Meeting</button>
                     </form>
 
 
@@ -331,9 +225,7 @@
 
 
 
-            <!-- =================================================
-                 MEETING HISTORY
-            ================================================== -->
+            <!-- section5: meeting history -->
 
             <section class="dashboard-section">
 
@@ -341,22 +233,15 @@
 
                     <div>
 
-                        <h2>
-                            Meeting History
+                        <h2>Meeting History
                         </h2>
 
-                        <p>
-                            Review previously uploaded meetings.
-                        </p>
+                        <p>Review previously uploaded meetings.</p>
 
                     </div>
 
 
-                    <button
-                        type="button"
-                        id="refreshMeetings"
-                        class="secondary-action"
-                    >
+                    <button type="button" id="refreshMeetings" class="secondary-action">
                         Refresh Meetings
                     </button>
 
@@ -374,9 +259,7 @@
 
 
 
-            <!-- =================================================
-                 ANALYTICS
-            ================================================== -->
+            <!-- section 6: analytics -->
 
             <section class="dashboard-section">
 
@@ -384,30 +267,18 @@
 
                     <div>
 
-                        <h2>
-                            Analytics
-                        </h2>
-
-                        <p>
-                            Overall meeting and task statistics.
-                        </p>
-
+                        <h2>Analytics</h2>
+                        <p>Overall meeting and task statistics.</p>
                     </div>
-
                 </div>
 
 
-                <div
-                    id="managerAnalytics"
-                    class="analytics-grid"
-                >
+                <div id="managerAnalytics" class="analytics-grid">
 
 
                     <div class="analytics-card">
 
-                        <span id="totalMeetings">
-                            0
-                        </span>
+                        <span id="totalMeetings"> 0</span>
 
                         <strong>
                             Total Meetings
@@ -521,9 +392,6 @@
 
                 </div>
 
-
-                <!-- Chart area for later 7.2D -->
-
                 <div
                     id="managerChartArea"
                     class="chart-area"
@@ -534,9 +402,7 @@
 
 
 
-            <!-- =================================================
-                 TEAM ANALYTICS
-            ================================================== -->
+            <!-- section 7: team analytics -->
 
             <section class="dashboard-section">
 
@@ -555,13 +421,7 @@
                     </div>
 
 
-                    <button
-                        type="button"
-                        id="showTeamAnalytics"
-                        class="secondary-action"
-                    >
-                        Show Team Analytics
-                    </button>
+                    <button type="button" id="showTeamAnalytics" class="secondary-action">Show Team Analytics</button>
 
                 </div>
 
@@ -592,10 +452,7 @@
                             <div id="priorityBreakdown">
                             </div>
 
-                            <div
-                                id="priorityChart"
-                                class="priority-chart"
-                            >
+                            <div id="priorityChart" class="priority-chart" >
                             </div>
 
                         </div>
@@ -622,16 +479,11 @@
 
 
 
-            <!-- =================================================
-                 BOTTOM LOGOUT
-            ================================================== -->
+            <!-- logout button -->
 
             <section class="dashboard-footer">
 
-                <button
-                    type="button"
-                    class="logout-button"
-                    onclick="logout()"
+                <button type="button" class="logout-button" onclick="logout()"
                 >
                     Logout
                 </button>
@@ -643,7 +495,7 @@
 
     </div>
 
-
+    <!--functionality of this interface supported by the js-->
     <script src="/static/manager_dashboard.js"></script>
 
 </body>

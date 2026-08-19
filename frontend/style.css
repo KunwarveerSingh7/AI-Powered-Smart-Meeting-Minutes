@@ -10,6 +10,51 @@
 */
 
 
+/*employee dashboard structure
+1. header (w logout)
+2. personal info of employees
+3. persoanl analytics
+4. my tasks
+5. meeting information
+6. task hisotry
+7. logout button
+*/
+
+
+/*manager dashbaord structure
+1. header (w logout)
+2. manager details
+2. team management (add employee, team list)
+3. upload meeting
+4. meeting hisotry cards
+5. manager analytics
+6. employee analytics
+7. logout button
+*/
+
+
+/*source 1: https://www.w3.org/TR/css-box-3/
+css box model*/
+/*source 2: https://www.w3schools.com/css/css3_transitions.asp
+transitions*/
+/*source 3: https://www.w3schools.com/css/css3_2dtransforms.asp
+transforms*/
+/*source 4: https://www.w3schools.com/css/css3_gradients.asp
+css gradients*/
+/*source 5: https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Flexbox
+flexbox layout*/
+/**/
+/*source 6: https://www.w3schools.com/css/css3_shadows_box.asp
+box shadowing*/
+/*source 7: https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/gradient/conic-gradient
+pie chaart */
+/*source 8: https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/border-radius
+borders*/
+/*source 9: https://www.w3schools.com/howto/howto_css_modals.asp
+modal box*/
+
+
+
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -17,9 +62,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Full login page
--------------------------------------------------- */
+/* full loginpage */
 
 .login-page {
     min-height: 100vh;
@@ -49,9 +92,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Main login card
--------------------------------------------------- */
+/* main login card */
 
 .login-card {
     width: 100%;
@@ -71,9 +112,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Logo
--------------------------------------------------- */
+/* logo */
 
 .app-logo {
     width: 120px;
@@ -94,9 +133,7 @@ body {
 
 
 
-/* --------------------------------------------------
-   Login heading
--------------------------------------------------- */
+/* login heasing */
 
 .login-card h2 {
     padding-top: 20px;
@@ -119,9 +156,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Form
--------------------------------------------------- */
+/* form */
 
 #loginForm {
     text-align: left;
@@ -153,9 +188,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Login button
--------------------------------------------------- */
+/* login button */
 
 .login-button {
     width: 100%;
@@ -170,9 +203,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Error message
--------------------------------------------------- */
+/* error messahe */
 
 .error-message {
     color: #dc2626;
@@ -187,9 +218,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Login note
--------------------------------------------------- */
+/* login note- */
 
 .login-note {
     margin-top: 22px;
@@ -203,9 +232,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Mobile
--------------------------------------------------- */
+/* small screem rsponsoive */
 
 @media (max-width: 600px) {
 
@@ -241,9 +268,7 @@ body {
 
 
 
-/* ==================================================
-   MANAGER DASHBOARD
-================================================== */
+/* manager dashboard */
 
 .dashboard-page {
     min-height: 100vh;
@@ -252,9 +277,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Header
--------------------------------------------------- */
+/* header */
 
 .dashboard-header {
     background-color: #ffffff;
@@ -307,9 +330,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Main page
--------------------------------------------------- */
+/* main page */
 
 .dashboard-content {
     max-width: 1250px;
@@ -334,9 +355,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Sections
--------------------------------------------------- */
+/* sections */
 
 .dashboard-section {
     background-color: #ffffff;
@@ -394,9 +413,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Buttons
--------------------------------------------------- */
+/* buttons */
 
 .primary-action,
 .secondary-action,
@@ -447,9 +464,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Dropdown panels
--------------------------------------------------- */
+/* dropdown panels */
 
 .dropdown-panel {
     margin-top: 20px;
@@ -471,9 +486,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Forms
--------------------------------------------------- */
+/* forms */
 
 .dashboard-section form {
     max-width: 650px;
@@ -526,9 +539,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Employee list
--------------------------------------------------- */
+/* employee list */
 
 #employeeList {
     display: flex;
@@ -552,9 +563,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Main Analytics
--------------------------------------------------- */
+/*overall analytics */
 
 .analytics-grid {
     display: grid;
@@ -614,9 +623,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Team analytics
--------------------------------------------------- */
+/* team analytics */
 
 #teamAnalytics {
     display: flex;
@@ -653,9 +660,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Chart placeholders
--------------------------------------------------- */
+/* chart placeholders */
 
 .chart-area {
     margin-top: 25px;
@@ -667,9 +672,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Footer
--------------------------------------------------- */
+/*footer */
 
 .dashboard-footer {
     display: flex;
@@ -680,9 +683,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Responsive manager dashboard
--------------------------------------------------- */
+/* manager dashboard for smaller screens */
 
 @media (max-width: 750px) {
 
@@ -735,9 +736,7 @@ body {
     }
 }
 
-/* --------------------------------------------------
-   Meeting History Cards
--------------------------------------------------- */
+/* meeting hisotry cards */
 
 .meeting-history-grid {
     display: grid;
@@ -794,9 +793,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Meeting Modal
--------------------------------------------------- */
+/* meeting modal */
 
 .meeting-modal-overlay {
     position: fixed;
@@ -878,9 +875,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Manager Analytics Charts
--------------------------------------------------- */
+/* manager analytics chart */
 
 .chart-area {
     display: grid;
@@ -1108,9 +1103,7 @@ body {
     }
 }
 
-/* --------------------------------------------------
-   Employee flip cards
--------------------------------------------------- */
+/* employee analytics - flip cards */
 
 .employee-flip-card {
     width: 100%;
@@ -1210,9 +1203,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Priority donut
--------------------------------------------------- */
+/* priority chart */
 
 .priority-chart {
     display: flex;
@@ -1274,9 +1265,7 @@ body {
     font-size: 13px;
 }
 
-/* ==================================================
-   MEETING REVIEW PAGE
-================================================== */
+/* meeting review page */
 
 .review-page {
     min-height: 100vh;
@@ -1292,9 +1281,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Review heading
--------------------------------------------------- */
+/* review heading */
 
 .review-heading {
     margin-bottom: 25px;
@@ -1331,9 +1318,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Review sections
--------------------------------------------------- */
+/* review sections */
 
 .review-section {
     background-color: #ffffff;
@@ -1380,9 +1365,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Extracted meeting text
--------------------------------------------------- */
+/* extracted text */
 
 .meeting-text-box {
     width: 100%;
@@ -1416,9 +1399,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   AI Summary
--------------------------------------------------- */
+/* ai summary */
 
 .review-textarea {
     width: 100%;
@@ -1458,9 +1439,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Review action row
--------------------------------------------------- */
+/* review action row */
 
 .review-action-row {
     display: flex;
@@ -1482,9 +1461,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Decisions
--------------------------------------------------- */
+/* decisions */
 
 .decision-list {
     display: flex;
@@ -1560,9 +1537,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Publish section
--------------------------------------------------- */
+/* publish sections */
 
 .publish-section {
     background:
@@ -1627,9 +1602,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Bottom navigation
--------------------------------------------------- */
+/* bottom navigation */
 
 .review-bottom-navigation {
     display: flex;
@@ -1640,9 +1613,7 @@ body {
 }
 
 
-/* --------------------------------------------------
-   Responsive
--------------------------------------------------- */
+/* reiew page small screen */
 
 @media (max-width: 700px) {
 
@@ -1668,9 +1639,7 @@ body {
     }
 }
 
-/* --------------------------------------------------
-   AI Task Review Cards
--------------------------------------------------- */
+/* ai task review cards */
 
 .task-review-list {
     display: flex;
@@ -1874,9 +1843,7 @@ textarea.task-input {
 }
 
 
-/* --------------------------------------------------
-   Responsive Task Review
--------------------------------------------------- */
+/* responsive task review */
 
 @media (max-width: 650px) {
 
@@ -1897,9 +1864,7 @@ textarea.task-input {
     }
 }
 
-/* --------------------------------------------------
-   Employee Personal Details
--------------------------------------------------- */
+/* employee personal detaisl */
 
 .employee-profile-card {
     display: grid;
@@ -1944,9 +1909,7 @@ textarea.task-input {
     overflow-wrap: anywhere;
 }
 
-/* --------------------------------------------------
-   Employee Analytics Chart
--------------------------------------------------- */
+/* employee analytics chart */
 
 .employee-chart-card {
     width: 100%;
@@ -2037,9 +2000,7 @@ textarea.task-input {
     align-items: center;
 }
 
-/* --------------------------------------------------
-   Employee Task Columns
--------------------------------------------------- */
+/* employees tasks columns */
 
 .employee-task-scroll {
     width: 100%;
@@ -2182,9 +2143,7 @@ textarea.task-input {
     border-radius: 20px;
 }
 
-/* --------------------------------------------------
-   Employee Meeting Information
--------------------------------------------------- */
+/* employee meeting info */
 
 .employee-meeting-list {
     display: flex;
@@ -2248,9 +2207,7 @@ textarea.task-input {
     color: #dc2626;
 }
 
-/* --------------------------------------------------
-   Employee Task History
--------------------------------------------------- */
+/* employee task history */
 
 .task-history-list {
     display: flex;

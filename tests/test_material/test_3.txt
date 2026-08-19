@@ -1,0 +1,26 @@
+﻿Test Meeting 3 — Post-Deployment Planning
+This one is particularly useful for testing whether the AI avoids inventing missing information.
+Meeting Title: Future Development Planning
+Meeting Date: 21 August 2026
+Attendees:
+ Rayyan
+Obi
+Manuel
+Kunwar
+Discussion:
+ Following completion of the prototype, the team discussed potential future development of the Smart Meeting Minutes and Task Tracker. Possible improvements included cloud deployment, email notifications, calendar integration, advanced analytics and support for additional AI models.
+Rayyan suggested investigating cloud deployment options to allow the application to support users outside the local environment. Obi recommended introducing automatic notifications when employees receive new tasks. Manuel suggested integrating task deadlines with employee calendars. Kunwar proposed improving dashboard analytics and developing a more responsive interface for mobile devices.
+The team agreed that these features are outside the current prototype scope and should be treated as future work.
+Decisions:
+ Cloud deployment will be considered as a future enhancement.
+Notifications and calendar integrations will not be implemented in the current prototype.
+The existing local AI architecture will remain for the final submission.
+No additional functionality will be added before final testing is completed.
+Action Items:
+ Rayyan will investigate possible cloud deployment approaches.
+Obi will research notification integration options by 28 August 2026.
+Manuel will investigate calendar integration.
+Kunwar will document possible improvements to the dashboard analytics by 27 August 2026.
+Priorities:
+ Notification integration research is low priority.
+Dashboard analytics research is medium priority.

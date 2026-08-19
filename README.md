@@ -24,3 +24,6 @@ to  be added
 
 # Instructions
 to be added
+
+```bash
+ollama pull llama3
